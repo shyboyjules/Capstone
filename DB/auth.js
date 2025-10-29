@@ -1,54 +1,54 @@
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, onAuthStateChanged } from "firebase/auth";
-import { getDatabase, ref, set } from "firebase/database";
+// DB/auth.js
+
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  updateProfile,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+
+import {
+  getFirestore,
+  doc,
+  setDoc
+} from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
 import { app } from "./firebase.js";
 
 const auth = getAuth(app);
-const db = getDatabase(app);
+const db = getFirestore(app);
 
-async function saveUserProfile(uid, username, email, profilePicUrl) {
-    await set(ref(db, 'users/' + uid), {
-        username,
-        email,
-        profilePicUrl: profilePicUrl || null
-    });
-}
-
-export async function signUpAndRegisterUser(email, password, username, profilePicUrl) {
+// ✅ Register user and save to Firestore
+export async function registerUser(email, password, username) {
+  try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
-    await updateProfile(user, { displayName: username, photoURL: profilePicUrl });
-    await saveUserProfile(user.uid, username, email, profilePicUrl);
+
+    await updateProfile(user, { displayName: username });
+
+    // ✅ Save to Firestore
+    await setDoc(doc(db, "users", user.uid), {
+      username: username,
+      email: email,
+      createdAt: new Date().toISOString()
+    });
+
+    console.log("✅ User created & saved in Firestore:", user.uid);
     return user;
+  } catch (error) {
+    console.error("❌ Registration error:", error.message);
+    throw error;
+  }
 }
 
-export function observeAuthState(callback) {
-    return onAuthStateChanged(auth, callback);
-}
-
-/**
- * Registers a new user with email and password and saves additional profile data to Realtime Database.
- * @param {string} email The user's email address.
- * @param {string} password The user's chosen password.
- * @param {string} username The user's chosen username/display name.
- * @returns {Promise<UserCredential>} A promise that resolves with the user credential.
- */
-export async function registerUser(email, password, username) {
-    try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-        await set(ref(db, 'users/' + user.uid), {
-            email: user.email,
-            username: username,
-            createdAt: new Date().toISOString()
-        });
-        console.log("User registered and data saved:", user.uid);
-        return userCredential;
-    } catch (error) {
-        console.error("Error during registration or data saving:", error.message);
-        throw error;
-    }
-}
-
+// ✅ Login user
 export async function loginUser(email, password) {
-    return signInWithEmailAndPassword(auth, email, password);
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    return userCredential.user;
+  } catch (error) {
+    console.error("❌ Login error:", error.message);
+    throw error;
+  }
 }

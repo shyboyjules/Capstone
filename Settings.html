@@ -31,54 +31,61 @@
                 <button type="submit" class="button">Update Name</button>
             </form>
         </section>
-        <section>
-            <h3>Edit Password</h3>
-            <form id="editPasswordForm">
-                <input type="password" id="newPassword" placeholder="Enter new password" required>
-                <input type="password" id="confirmNewPassword" placeholder="Confirm new password" required>
-                <button type="submit" class="button">Update Password</button>
-            </form>
-        </section>
         <script type="module">
-            import { getAuth, updateProfile, updatePassword, signOut } from './DB/auth.js';
-            import { app } from './DB/firebase.js';
-            const auth = getAuth(app);
+  import {
+    getAuth,
+    signOut,
+    updateProfile,
+    updatePassword
+  } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+  import { app } from "../DB/firebase.js";
 
-            // Logout
-            document.getElementById('logoutBtn').onclick = async () => {
-                await signOut(auth);
-                window.location.href = './login and register/login.html';
-            };
+  const auth = getAuth(app);
 
-            // Edit Name
-            document.getElementById('editNameForm').onsubmit = async (e) => {
-                e.preventDefault();
-                const newName = document.getElementById('newName').value;
-                try {
-                    await updateProfile(auth.currentUser, { displayName: newName });
-                    alert('Name updated successfully!');
-                } catch (error) {
-                    alert('Failed to update name: ' + error.message);
-                }
-            };
+  // ✅ Logout button
+  document.getElementById("logoutBtn").addEventListener("click", async () => {
+    try {
+      await signOut(auth);
+      alert("You have been logged out!");
+      window.location.href = "../login and register/login.html";
+    } catch (error) {
+      alert("Logout failed: " + error.message);
+    }
+  });
 
-            // Edit Password
-            document.getElementById('editPasswordForm').onsubmit = async (e) => {
-                e.preventDefault();
-                const newPassword = document.getElementById('newPassword').value;
-                const confirmNewPassword = document.getElementById('confirmNewPassword').value;
-                if (newPassword !== confirmNewPassword) {
-                    alert('Passwords do not match!');
-                    return;
-                }
-                try {
-                    await updatePassword(auth.currentUser, newPassword);
-                    alert('Password updated successfully!');
-                } catch (error) {
-                    alert('Failed to update password: ' + error.message);
-                }
-            };
-        </script>
+  // ✅ Edit display name
+  document.getElementById("editNameForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const newName = document.getElementById("newName").value.trim();
+
+    try {
+      await updateProfile(auth.currentUser, { displayName: newName });
+      alert("Name updated successfully!");
+    } catch (error) {
+      alert("Failed to update name: " + error.message);
+    }
+  });
+
+  // ✅ Edit password
+  document.getElementById("editPasswordForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const newPassword = document.getElementById("newPassword").value;
+    const confirmNewPassword = document.getElementById("confirmNewPassword").value;
+
+    if (newPassword !== confirmNewPassword) {
+      alert("Passwords do not match!");
+      return;
+    }
+
+    try {
+      await updatePassword(auth.currentUser, newPassword);
+      alert("Password updated successfully!");
+    } catch (error) {
+      alert("Failed to update password: " + error.message);
+    }
+  });
+</script>
+
     </main>
 </body>
 </html>
