@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Login - Teacher Dashboard</title>
+    <title>MATH QUEST WEB</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../css/StyleSheetLoginandRegister.css">
 </head>
@@ -20,20 +20,24 @@
             </div>
             <button type="submit" class="button">Login</button>
         </form>
-        <a href="register.html" class="switch-link">Don't have an account? Register</a>
+        <p class="switch-link">
+            Don't have an account? <a href="register.html">Register</a>
+        </p>
     </div>
+
     <script type="module">
         import { loginUser } from '../DB/auth.js';
 
         document.getElementById("loginForm").addEventListener("submit", async (e) => {
             e.preventDefault();
+
             const email = document.getElementById("email").value;
             const password = document.getElementById("password").value;
 
             try {
                 const user = await loginUser(email, password);
-                alert("Welcome back, " + (user.displayName || "Teacher") + "!");
-                window.location.href = "../Home.html";
+                // The loginUser function already redirects based on role
+                alert(`Welcome back, ${user.displayName || "User"}!`);
             } catch (error) {
                 alert("Login failed: " + error.message);
             }

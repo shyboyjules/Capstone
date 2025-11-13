@@ -1,56 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Register - Teacher Dashboard</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../css/StyleSheetLoginandRegister.css">
+  <meta charset="UTF-8">
+  <title>Register - User</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../css/StyleSheetLoginandRegister.css">
 </head>
 <body>
-    <div class="form-container">
-        <h2>Register</h2>
-        <form id="registerForm">
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" name="username" required>
-            </div>
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" required>
-            </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" required>
-            </div>
-            <div class="form-group">
-                <label for="confirm-password">Confirm Password</label>
-                <input type="password" id="confirm-password" name="confirm-password" required>
-            </div>
-            <button type="submit" class="button">Register</button>
-        </form>
-        <a href="login.html" class="switch-link">Already have an account? Login</a>
-    </div>
-    <script type="module">
-        import { registerUser } from '../DB/auth.js';
+  <div class="form-container">
+    <h2>User Registration</h2>
+    <form id="registerForm">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required>
+      </div>
 
-        document.getElementById("registerForm").addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const username = document.getElementById("username").value;
-            const email = document.getElementById("email").value;
-            const password = document.getElementById("password").value;
-            const confirmPassword = document.getElementById("confirm-password").value;
-            if (password !== confirmPassword) {
-                alert("Passwords do not match!");
-                return;
-            }
-            try {
-                const user = await registerUser(email, password, username);
-                alert("Registration successful!");
-                window.location.href = "../Home.html";
-            } catch (error) {
-                alert("Error: " + error.message);
-            }
-        });
-    </script>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required minlength="6">
+      </div>
+
+      <div class="form-group">
+        <label for="confirm-password">Confirm Password</label>
+        <input type="password" id="confirm-password" name="confirm-password" required>
+      </div>
+
+      <button type="submit" class="button">Register</button>
+    </form>
+
+    <a href="login.html" class="switch-link">Already have an account? Login</a>
+  </div>
+
+  <script type="module">
+    import { registerUser } from "../DB/auth.js";
+
+    document.getElementById("registerForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const username = document.getElementById("username").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      const confirmPassword = document.getElementById("confirm-password").value;
+
+      console.log({ username, email, password, confirmPassword }); // ✅ check values
+
+      if (!username || !email || !password || !confirmPassword) {
+        alert("Please fill in all fields.");
+        return;
+      }
+
+      if (password.length < 6) {
+        alert("Password must be at least 6 characters long.");
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        alert("Passwords do not match!");
+        return;
+      }
+
+      try {
+        console.log("🚀 Registering user...");
+        const user = await registerUser(email, password, username, "user");
+        console.log("✅ Registration success:", user);
+
+        alert("✅ Registration successful! You can now log in.");
+        window.location.href = "login.html";
+      } catch (error) {
+        console.error("❌ Registration failed:", error);
+        alert("Error: " + error.message);
+      }
+    });
+  </script>
 </body>
 </html>
