@@ -8,6 +8,30 @@
   <script src="/_sdk/element_sdk.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
+        /* Minimal sidebar styles for teacher dashboard */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 260px;
+            background: linear-gradient(180deg, #ffffff 0%, #f7fafc 100%);
+            border-right: 1px solid rgba(0,0,0,0.04);
+            padding: 20px;
+            box-shadow: 4px 0 24px rgba(0,0,0,0.06);
+            z-index: 250;
+        }
+        .sidebar .logo { font-weight: 800; font-size: 1.1rem; color: #1a202c; margin-bottom: 18px; }
+        .sidebar .profile { display:flex; align-items:center; gap:12px; margin-bottom:18px }
+        .sidebar .avatar { width:48px; height:48px; border-radius:10px; background:linear-gradient(135deg,#667eea,#764ba2); color:#fff; display:flex;align-items:center;justify-content:center; font-weight:700 }
+        .sidebar nav { display:flex; flex-direction:column; gap:8px }
+        .sidebar .nav-item { padding:10px 12px; border-radius:10px; cursor:pointer; color:#1a202c; font-weight:700 }
+        .sidebar .nav-item:hover { background: linear-gradient(135deg,#eef2ff,#ede9fe); }
+        .sidebar .nav-item.active { background: linear-gradient(135deg,#667eea,#764ba2); color: #fff; }
+        .sidebar .logout-btn { margin-top:18px; padding:10px; border-radius:10px; background:#fff;border:1px solid #fed7d7;color:#c53030; cursor:pointer }
+
+        /* push content to the right so sidebar doesn't overlap */
+        .dashboard-container { margin-left: 280px; }
         body {
             box-sizing: border-box;
             margin: 0;
@@ -446,45 +470,43 @@
     </style>
   <style>@view-transition { navigation: auto; }</style>
   <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
-    <link rel="stylesheet" href="../css/sidebar.css">
  </head>
  <body>
-    <div class="app-layout">
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div class="logo">
-                <div class="logo-icon">📚</div>
-                <div class="logo-text" id="platform-name">MathQuest</div>
-            </div>
-            <div class="student-profile">
-                <div class="student-avatar" id="teacher-avatar">MJ</div>
-                <div class="student-info">
-                    <h3 id="sidebar-teacher-name">Ms. Johnson</h3>
-                    <p id="sidebar-class-name">Grade 5A</p>
-                </div>
-            </div>
-        </div>
+         <!-- Teacher Sidebar (inlined) -->
+         <aside class="sidebar" id="sidebar">
+             <div class="sidebar-header">
+                 <div class="logo">
+                     <div class="logo-icon">📚</div>
+                     <div class="logo-text" id="platform-name">MathQuest</div>
+                 </div>
+                 <div class="student-profile">
+                     <div class="student-avatar" id="teacher-avatar">MJ</div>
+                     <div class="student-info">
+                         <h3 id="sidebar-teacher-name">Ms. Johnson</h3>
+                         <p id="sidebar-class-name">Grade 5A</p>
+                     </div>
+                 </div>
+             </div>
 
-        <nav class="sidebar-nav">
-            <div class="nav-section">
-                <div class="nav-section-title">Main Menu</div>
-                <a class="nav-item active" href="#" data-target=".header" data-section="dashboard"> <span class="nav-icon">🏠</span> <span>Dashboard</span> </a>
-                <a class="nav-item" href="#" data-target=".add-score-section" data-section="scores"> <span class="nav-icon">📊</span> <span>Scores</span> </a>
-                <a class="nav-item" href="#" data-target=".student-rankings" data-section="leaderboard"> <span class="nav-icon">🏆</span> <span>Leaderboard</span> </a>
-            </div>
+             <nav class="sidebar-nav">
+                 <div class="nav-section">
+                     <div class="nav-section-title">Main Menu</div>
+                     <a class="nav-item active" href="#" data-target=".header" data-section="dashboard"> <span class="nav-icon">🏠</span> <span>Dashboard</span> </a>
+                     <a class="nav-item" href="#" data-target=".add-score-section" data-section="scores"> <span class="nav-icon">📊</span> <span>Scores</span> </a>
+                     <a class="nav-item" href="#" data-target=".student-rankings" data-section="leaderboard"> <span class="nav-icon">🏆</span> <span>Leaderboard</span> </a>
+                 </div>
 
-            <div class="nav-section">
-                <div class="nav-section-title">Account</div>
-                <a class="nav-item" href="#" data-target="#settings-section" data-section="settings"> <span class="nav-icon">⚙️</span> <span>Settings</span> </a>
-            </div>
-        </nav>
+                 <div class="nav-section">
+                     <div class="nav-section-title">Account</div>
+                     <a class="nav-item" href="#" data-target="#settings-section" data-section="settings"> <span class="nav-icon">⚙️</span> <span>Settings</span> </a>
+                 </div>
+             </nav>
 
-        <div class="sidebar-footer">
-            <button class="logout-btn" id="logout-btn"> <span>🚪</span> <span>Log Out</span> </button>
-        </div>
-    </aside>
-
-    <div class="dashboard-container">
+             <div class="sidebar-footer">
+                 <button class="logout-btn" id="logout-btn"> <span>🚪</span> <span>Log Out</span> </button>
+             </div>
+         </aside>
+  <div class="dashboard-container">
    <header class="header">
     <h1 id="dashboard-title">Teacher Dashboard</h1>
     <div class="header-info">
@@ -561,9 +583,7 @@
       </div>
       <div class="form-group"><label class="form-label" for="max-score-input">Maximum Score</label> <input type="number" id="max-score-input" class="form-input" placeholder="100" min="1" required>
       </div>
-            <div class="form-group"><label class="form-label" for="subject-input">Subject</label> <select id="subject-input" class="form-select" required>
-                <option value="Mathematics" selected>Mathematics</option>
-            </select>
+      <div class="form-group"><label class="form-label" for="subject-input">Subject</label> <select id="subject-input" class="form-select" required> <option value="">Select Subject</option> <option value="Mathematics">Mathematics</option> <option value="English">English</option> <option value="Science">Science</option> <option value="History">History</option> <option value="Geography">Geography</option> <option value="Art">Art</option> <option value="Physical Education">Physical Education</option> </select>
       </div>
      </div><button type="submit" class="submit-btn" id="add-score-btn">Add Score</button>
     </form>
@@ -619,7 +639,14 @@
     </div>
    </div>
   </div>
-    <script>
+    <!-- Settings Section -->
+    <section id="settings-section" class="settings-container">
+     <div class="settings-card">
+        <h3 class="settings-card-title">Settings</h3>
+        <p style="color:#4a5568">Profile and class settings will appear here. Configure preferences, notifications, and other tools.</p>
+     </div>
+    </section>
+  <script>
         let allScores = [];
         let currentWeekFilter = 'all';
         let chart = null;
@@ -627,8 +654,8 @@
 
         const defaultConfig = {
             dashboard_title: "Teacher Dashboard",
-            class_name: "Grade 7", 
-            teacher_name: "Mr. Babia"
+            class_name: "Grade 5A", 
+            teacher_name: "Ms. Johnson"
         };
 
         // Data SDK Handler
@@ -958,21 +985,21 @@
 
         function updateChart() {
             if (!chart) return;
-            
+
             let filteredScores = allScores;
             if (currentWeekFilter !== 'all') {
                 filteredScores = allScores.filter(score => score.week === currentWeekFilter);
             }
-            
+
             if (filteredScores.length === 0) {
                 chart.data.labels = [];
                 chart.data.datasets[0].data = [];
                 chart.update();
                 return;
             }
-            
+
             const weeklyAverages = {};
-            
+
             filteredScores.forEach(score => {
                 const percentage = (score.score / score.max_score * 100);
                 if (!weeklyAverages[score.week]) {
@@ -981,12 +1008,10 @@
                 weeklyAverages[score.week].total += percentage;
                 weeklyAverages[score.week].count += 1;
             });
-            
+
             const weeks = Object.keys(weeklyAverages).sort();
-            const averages = weeks.map(week => 
-                Math.round(weeklyAverages[week].total / weeklyAverages[week].count)
-            );
-            
+            const averages = weeks.map(week => Math.round(weeklyAverages[week].total / weeklyAverages[week].count));
+
             chart.data.labels = weeks;
             chart.data.datasets[0].data = averages;
             chart.update();
@@ -1016,13 +1041,12 @@
             if (filteredScores.length > 1) {
                 const recent = percentages.slice(-Math.ceil(percentages.length / 2));
                 const older = percentages.slice(0, Math.floor(percentages.length / 2));
-                
+
                 const recentAvg = recent.reduce((a, b) => a + b, 0) / recent.length;
                 const olderAvg = older.reduce((a, b) => a + b, 0) / older.length;
-                
+
                 const improvement = Math.round(recentAvg - olderAvg);
-                document.getElementById('improvement-rate').textContent = 
-                    improvement > 0 ? ('+' + improvement + '%') : (improvement + '%');
+                document.getElementById('improvement-rate').textContent = (improvement > 0 ? '+' : '') + improvement + '%';
             } else {
                 document.getElementById('improvement-rate').textContent = 'N/A';
             }
@@ -1068,7 +1092,65 @@
         // Initialize the application
         initializeApp();
     </script>
-    <script src="../js/sidebar.js" defer></script>
-  </div>
- </body>
+        <script type="module">
+            import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+            import { app } from '../../DB/firebase.js';
+
+            const auth = getAuth(app);
+
+            // Bind sidebar nav to scroll to sections and bind logout
+            function bindSidebar() {
+                const items = Array.from(document.querySelectorAll('.sidebar .nav-item'));
+
+                // Attach click + keyboard handlers and ensure items are focusable
+                items.forEach(it => {
+                    it.setAttribute('tabindex', '0');
+                    it.addEventListener('click', () => {
+                        const selector = it.dataset.target;
+                        const el = document.querySelector(selector);
+                        if (el && typeof el.scrollIntoView === 'function') el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        items.forEach(i => i.classList.remove('active'));
+                        it.classList.add('active');
+                    });
+
+                    it.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            it.click();
+                        }
+                    });
+                });
+
+                // Setup IntersectionObserver to keep track of which section is in view
+                const targets = items.map(i => document.querySelector(i.dataset.target)).filter(Boolean);
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (!entry.target) return;
+                        if (entry.isIntersecting) {
+                            items.forEach(i => i.classList.remove('active'));
+                            const matched = items.find(i => entry.target.matches(i.dataset.target));
+                            if (matched) matched.classList.add('active');
+                        }
+                    });
+                }, { root: null, rootMargin: '0px 0px -60% 0px', threshold: 0.2 });
+
+                targets.forEach(t => observer.observe(t));
+
+                const logoutBtn = document.getElementById('logout-btn');
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', async () => {
+                        try { await signOut(auth); } catch (e) { console.warn('signOut failed', e); }
+                        window.location.href = '../login and register/login.html';
+                    });
+                }
+
+                // Ensure at least one nav item is active on load
+                if (!document.querySelector('.sidebar .nav-item.active') && items[0]) items[0].classList.add('active');
+            }
+
+            // Wait for sidebar partial to be injected, then bind. Also bind immediately if sidebar already present.
+            window.addEventListener('teacherSidebarLoaded', bindSidebar);
+            if (document.querySelector('.sidebar')) bindSidebar();
+        </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99e758d1a469a9a8',t:'MTc2MzEzMjA5Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

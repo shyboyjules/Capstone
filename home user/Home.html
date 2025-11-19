@@ -1,12 +1,1600 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Teacher Dashboard - Student Scores</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/css/StyleSheet.css">
-</head>
-<body>
-    <header>
-        <h1>Student Dashboard</h1>
-        <p>View Student Scores</p>
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Dashboard</title>
+  <script src="/_sdk/data_sdk.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link rel="stylesheet" href="../css/sidebar.css">
+  <style>
+      * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #2d3748;
+            min-height: 100%;
+            overflow-x: hidden;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100%;
+        }
+
+        /* sidebar styles moved to ../css/sidebar.css */
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 32px;
+        }
+
+        .welcome-banner {
+            background: white;
+            border-radius: 20px;
+            padding: 32px;
+            margin-bottom: 32px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            background: linear-gradient(135deg, white 0%, #f7fafc 100%);
+            border: 1px solid rgba(102, 126, 234, 0.1);
+        }
+
+        .sidebar-toggle {
+            display: none;
+            background: white;
+            border: none;
+            font-size: 1.2rem;
+            padding: 8px 10px;
+            border-radius: 10px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+            cursor: pointer;
+        }
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.44);
+            z-index: 50;
+            opacity: 0;
+            transition: opacity 0.22s ease;
+        }
+        .sidebar-overlay.active {
+            display: block;
+            opacity: 1;
+        }
+        .welcome-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .welcome-text h1 {
+            font-size: 2rem;
+            color: #1a202c;
+            margin-bottom: 8px;
+            font-weight: 800;
+        }
+
+        .welcome-text p {
+            color: #718096;
+            font-size: 1.05rem;
+        }
+
+        .welcome-stats {
+            display: flex;
+            gap: 24px;
+        }
+
+        .welcome-stat {
+            text-align: center;
+            padding: 12px 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .welcome-stat-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .welcome-stat-label {
+            font-size: 0.8rem;
+            color: #718096;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        /* Content Sections */
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        /* Dashboard Overview */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+            border-color: rgba(102, 126, 234, 0.3);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .stat-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+        }
+
+        .stat-icon.blue { background: linear-gradient(135deg, #dbeafe, #bfdbfe); }
+        .stat-icon.green { background: linear-gradient(135deg, #d1fae5, #a7f3d0); }
+        .stat-icon.purple { background: linear-gradient(135deg, #e9d5ff, #d8b4fe); }
+        .stat-icon.orange { background: linear-gradient(135deg, #fed7aa, #fdba74); }
+
+        .stat-value {
+            font-size: 2.4rem;
+            font-weight: 800;
+            color: #1a202c;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            color: #718096;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .stat-trend {
+            font-size: 0.85rem;
+            color: #10b981;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        /* Scores Section */
+        .scores-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: white;
+        }
+
+        .add-score-btn {
+            padding: 12px 24px;
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 16px rgba(255, 255, 255, 0.3);
+        }
+
+        .add-score-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(255, 255, 255, 0.4);
+        }
+
+        .scores-container {
+            background: white;
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+        }
+
+        .scores-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .score-card {
+            background: linear-gradient(135deg, #f7fafc, white);
+            border-radius: 16px;
+            padding: 24px;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .score-card:hover {
+            transform: translateY(-4px);
+            border-color: #667eea;
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
+        }
+
+        .score-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .score-week {
+            font-size: 0.85rem;
+            color: #718096;
+            font-weight: 600;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .score-value {
+            font-size: 3rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .score-subject {
+            font-size: 0.9rem;
+            color: #4a5568;
+            font-weight: 600;
+        }
+
+        .score-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .score-action-btn {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .score-action-btn.edit {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .score-action-btn.edit:hover {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .score-action-btn.delete {
+            background: #fed7d7;
+            color: #c53030;
+        }
+
+        .score-action-btn.delete:hover {
+            background: #f56565;
+            color: white;
+        }
+
+        /* Leaderboard Section */
+        .leaderboard-container {
+            background: white;
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+        }
+
+        .leaderboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .leaderboard-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #1a202c;
+        }
+
+        .leaderboard-filter {
+            display: flex;
+            gap: 8px;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #e2e8f0;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #4a5568;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-color: transparent;
+        }
+
+        .leaderboard-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f7fafc, white);
+            border-radius: 16px;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .leaderboard-item:hover {
+            transform: translateX(8px);
+            border-color: #667eea;
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.15);
+        }
+
+        .leaderboard-item.current-student {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border-color: #667eea;
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
+        }
+
+        .rank-badge {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .rank-badge.top-1 {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: white;
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);
+        }
+
+        .rank-badge.top-2 {
+            background: linear-gradient(135deg, #94a3b8, #64748b);
+            color: white;
+            box-shadow: 0 4px 12px rgba(148, 163, 184, 0.4);
+        }
+
+        .rank-badge.top-3 {
+            background: linear-gradient(135deg, #fb923c, #f97316);
+            color: white;
+            box-shadow: 0 4px 12px rgba(251, 146, 60, 0.4);
+        }
+
+        .rank-badge.other {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .leaderboard-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .leaderboard-info {
+            flex: 1;
+        }
+
+        .leaderboard-name {
+            font-weight: 700;
+            color: #1a202c;
+            font-size: 1.05rem;
+            margin-bottom: 4px;
+        }
+
+        .leaderboard-id {
+            font-size: 0.85rem;
+            color: #718096;
+            font-weight: 500;
+        }
+
+        .leaderboard-score {
+            font-size: 1.8rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Settings Section */
+        .settings-container {
+            max-width: 800px;
+        }
+
+        .settings-card {
+            background: white;
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            margin-bottom: 24px;
+        }
+
+        .settings-card-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #1a202c;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 700;
+            color: #2d3748;
+            font-size: 0.95rem;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .save-btn {
+            padding: 14px 32px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+        }
+
+        .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+        }
+
+        .save-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90%;
+            overflow-y: auto;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            padding: 28px 32px;
+            border-bottom: 2px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #1a202c;
+        }
+
+        .close-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            border: none;
+            background: #f7fafc;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            color: #4a5568;
+            transition: all 0.2s ease;
+        }
+
+        .close-btn:hover {
+            background: #e2e8f0;
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 32px;
+        }
+
+        .modal-footer {
+            padding: 24px 32px;
+            border-top: 2px solid #e2e8f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .btn-secondary {
+            padding: 12px 24px;
+            background: #f7fafc;
+            color: #4a5568;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.2s ease;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .btn-primary {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-danger {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #fc8181, #f56565);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(245, 101, 101, 0.3);
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            background: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 2000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            border-left: 4px solid;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success {
+            border-left-color: #10b981;
+        }
+
+        .toast.error {
+            border-left-color: #f56565;
+        }
+
+        .toast-icon {
+            font-size: 1.4rem;
+        }
+
+        .toast-text {
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #718096;
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-text {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #4a5568;
+        }
+
+        .empty-subtext {
+            font-size: 1rem;
+            color: #a0aec0;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar-toggle {
+                display: inline-flex;
+                position: fixed;
+                top: 16px;
+                left: 12px;
+                z-index: 220;
+            }
+
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 20px 16px;
+            }
+
+            .welcome-banner {
+                padding: 24px 20px;
+            }
+
+            .welcome-text h1 {
+                font-size: 1.5rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .scores-grid {
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            }
+
+            .section-title {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+    <script src="../js/loadSidebar.js" defer></script>
+    <script src="../js/loadContent.js" defer></script>
+    <div class="dashboard-container"><!-- Sidebar -->
+     <div id="sidebar-container"></div>
+     <div id="sidebar-overlay" class="sidebar-overlay" aria-hidden="true"></div><!-- Main Content -->
+    <main class="main-content"><!-- Welcome Banner -->
+     <div id="main-content-container">
+    <div class="welcome-banner">
+     <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Toggle sidebar">☰</button>
+     <div class="welcome-content">
+      <div class="welcome-text">
+       <h1>Welcome back, <span id="welcome-student-name">Jules</span>! 👋</h1>
+       <p>Here's your academic progress overview</p>
+      </div>
+      <div class="welcome-stats">
+       <div class="welcome-stat">
+        <div class="welcome-stat-value" id="current-week">
+         1
+        </div>
+        <div class="welcome-stat-label">
+         Current Week
+        </div>
+       </div>
+       <div class="welcome-stat">
+        <div class="welcome-stat-value" id="total-scores">
+         0
+        </div>
+        <div class="welcome-stat-label">
+         Total Scores
+        </div>
+       </div>
+      </div>
+     </div>
+    </div><!-- Dashboard Section -->
+    <section class="content-section active" id="dashboard-section">
+     <div class="stats-grid">
+      <div class="stat-card">
+       <div class="stat-header">
+        <div class="stat-icon blue">
+         📈
+        </div>
+       </div>
+       <div class="stat-value" id="average-score">
+        0
+       </div>
+       <div class="stat-label">
+        Average Score
+       </div>
+       <div class="stat-trend">
+        ↑ Keep it up!
+       </div>
+      </div>
+      <div class="stat-card">
+       <div class="stat-header">
+        <div class="stat-icon green">
+         ⭐
+        </div>
+       </div>
+       <div class="stat-value" id="highest-score">
+        0
+       </div>
+       <div class="stat-label">
+        Highest Score
+       </div>
+       <div class="stat-trend">
+        🎯 Personal Best
+       </div>
+      </div>
+      <div class="stat-card">
+       <div class="stat-header">
+        <div class="stat-icon purple">
+         🏆
+        </div>
+       </div>
+       <div class="stat-value" id="rank-position">
+        -
+       </div>
+       <div class="stat-label">
+        Your Rank
+       </div>
+       <div class="stat-trend">
+        📊 Out of students
+       </div>
+      </div>
+      <div class="stat-card">
+       <div class="stat-header">
+        <div class="stat-icon orange">
+         📚
+        </div>
+       </div>
+       <div class="stat-value" id="total-weeks">
+        0
+       </div>
+       <div class="stat-label">
+        Weeks Completed
+       </div>
+       <div class="stat-trend">
+        🔥 Stay consistent
+       </div>
+      </div>
+     </div>
+    </section><!-- Scores Section -->
+    </div>
+    <section class="content-section" id="scores-section">
+     <div class="scores-header">
+      <h2 class="section-title">My Scores</h2><button class="add-score-btn" id="add-score-btn"> <span>+</span> <span>Add Score</span> </button>
+     </div>
+     <div class="scores-container">
+      <div class="scores-grid" id="scores-grid">
+       <div class="empty-state">
+        <div class="empty-icon">
+         📊
+        </div>
+        <div class="empty-text">
+         No scores yet
+        </div>
+        <div class="empty-subtext">
+         Add your first weekly score to get started
+        </div>
+       </div>
+      </div>
+     </div>
+    </section><!-- Leaderboard Section -->
+    <section class="content-section" id="leaderboard-section">
+     <div class="leaderboard-container">
+      <div class="leaderboard-header">
+       <h2 class="leaderboard-title">🏆 Leaderboard</h2>
+       <div class="leaderboard-filter"><button class="filter-btn active" data-filter="overall">Overall</button> <button class="filter-btn" data-filter="weekly">This Week</button>
+       </div>
+      </div>
+      <div class="leaderboard-list" id="leaderboard-list">
+       <div class="empty-state">
+        <div class="empty-icon">
+         🏆
+        </div>
+        <div class="empty-text">
+         Leaderboard coming soon
+        </div>
+        <div class="empty-subtext">
+         Add scores to see rankings
+        </div>
+       </div>
+      </div>
+     </div>
+    </section><!-- Settings Section -->
+    <section class="content-section" id="settings-section">
+     <div class="settings-container">
+      <div class="settings-card">
+       <h3 class="settings-card-title">Profile Information</h3>
+       <form id="profile-form">
+        <div class="form-group"><label class="form-label" for="profile-name">Full Name</label> <input type="text" id="profile-name" class="form-input" value="Alex Chen">
+        </div>
+        <div class="form-group"><label class="form-label" for="profile-email">Email Address</label> <input type="email" id="profile-email" class="form-input" value="alex.chen@school.edu">
+        </div>
+        <div class="form-group"><label class="form-label" for="profile-student-id">Student ID</label> <input type="text" id="profile-student-id" class="form-input" value="STU2024001">
+        </div><button type="submit" class="save-btn">Save Changes</button>
+       </form>
+      </div>
+      <div class="settings-card">
+       <h3 class="settings-card-title">Preferences</h3>
+       <form id="preferences-form">
+        <div class="form-group"><label class="form-label" for="theme">Theme</label> <select id="theme" class="form-select"> <option value="light">Light Mode</option> <option value="dark">Dark Mode</option> <option value="auto">Auto</option> </select>
+        </div>
+        <div class="form-group"><label class="form-label" for="notifications">Notifications</label> <select id="notifications" class="form-select"> <option value="all">All Notifications</option> <option value="important">Important Only</option> <option value="none">None</option> </select>
+        </div><button type="submit" class="save-btn">Save Preferences</button>
+       </form>
+      </div>
+     </div>
+    </section>
+   </main>
+  </div><!-- Add/Edit Score Modal -->
+  <div class="modal-overlay" id="score-modal">
+   <div class="modal">
+    <div class="modal-header">
+     <h3 class="modal-title" id="score-modal-title">Add Score</h3><button class="close-btn" id="close-score-modal">×</button>
+    </div>
+    <form id="score-form">
+     <div class="modal-body">
+      <div class="form-group"><label class="form-label" for="score-week">Week Number</label> <input type="number" id="score-week" class="form-input" min="1" placeholder="e.g., 1" required>
+      </div>
+    <div class="form-group"><label class="form-label" for="score-subject">Subject</label> <select id="score-subject" class="form-select" required> <option value="Mathematics" selected>Mathematics</option> </select>
+      </div>
+      <div class="form-group"><label class="form-label" for="score-value">Score</label> <input type="number" id="score-value" class="form-input" min="0" max="100" placeholder="e.g., 85" required>
+      </div>
+     </div>
+     <div class="modal-footer"><button type="button" class="btn-secondary" id="cancel-score-btn">Cancel</button> <button type="submit" class="btn-primary" id="submit-score-btn">Add Score</button>
+     </div>
+    </form>
+   </div>
+  </div><!-- Delete Confirmation Modal -->
+  <div class="modal-overlay" id="delete-modal">
+   <div class="modal">
+    <div class="modal-header">
+     <h3 class="modal-title">Delete Score</h3><button class="close-btn" id="close-delete-modal">×</button>
+    </div>
+    <div class="modal-body">
+     <div class="empty-state">
+      <div class="empty-icon">
+       ⚠️
+      </div>
+      <div class="empty-text">
+       Are you sure?
+      </div>
+      <div class="empty-subtext">
+       This action cannot be undone
+      </div>
+     </div>
+    </div>
+    <div class="modal-footer"><button type="button" class="btn-secondary" id="cancel-delete-btn">Cancel</button> <button type="button" class="btn-danger" id="confirm-delete-btn">Delete Score</button>
+    </div>
+   </div>
+  </div>
+  <script>
+        let allScores = [];
+        let editingScore = null;
+        let deletingScore = null;
+        let recordCount = 0;
+        const CURRENT_STUDENT_ID = "STU2024001";
+
+        const defaultConfig = {
+            platform_name: "EduTrack",
+            student_name: "Alex Chen",
+            student_id: "STU2024001"
+        };
+
+        // Mock leaderboard data
+        const mockLeaderboard = [
+            { name: "Sarah Johnson", id: "STU2024002", score: 950, avatar: "SJ" },
+            { name: "Alex Chen", id: "STU2024001", score: 850, avatar: "AC" },
+            { name: "Michael Lee", id: "STU2024003", score: 820, avatar: "ML" },
+            { name: "Emma Wilson", id: "STU2024004", score: 780, avatar: "EW" },
+            { name: "Daniel Brown", id: "STU2024005", score: 750, avatar: "DB" }
+        ];
+
+        // Data SDK Handler
+        const dataHandler = {
+            onDataChanged(data) {
+                // Debug logging to help diagnose empty scores
+                console.log('dataHandler.onDataChanged -> received data', data);
+
+                // If the SDK returns nothing (common when running locally without a backend),
+                // provide a small demo dataset so the UI isn't always empty during development.
+                if (!Array.isArray(data) || data.length === 0) {
+                    console.warn('No scores received from data SDK — using local demo scores for preview.');
+                    data = [
+                        { score_id: 'demo_1', student_id: CURRENT_STUDENT_ID, week_number: 1, score: 78, subject: 'Mathematics', __backendId: 'demo_1' },
+                        { score_id: 'demo_2', student_id: CURRENT_STUDENT_ID, week_number: 2, score: 85, subject: 'Science', __backendId: 'demo_2' }
+                    ];
+                }
+
+                allScores = data.filter(score => score.student_id === CURRENT_STUDENT_ID);
+                recordCount = data.length;
+                updateDashboard();
+                renderScores();
+                updateLeaderboard();
+            }
+        };
+
+        // Element SDK Implementation
+        async function onConfigChange(config) {
+            const platformName = config.platform_name || defaultConfig.platform_name;
+            const studentName = config.student_name || defaultConfig.student_name;
+            const studentId = config.student_id || defaultConfig.student_id;
+            
+            document.getElementById('platform-name').textContent = platformName;
+            document.getElementById('sidebar-student-name').textContent = studentName;
+            document.getElementById('sidebar-student-id').textContent = studentId;
+            document.getElementById('welcome-student-name').textContent = studentName.split(' ')[0];
+            
+            const initials = studentName.split(' ').map(n => n[0]).join('').toUpperCase();
+            document.getElementById('student-avatar').textContent = initials;
+            
+            document.getElementById('profile-name').value = studentName;
+            document.getElementById('profile-student-id').value = studentId;
+        }
+
+        function mapToCapabilities(config) {
+            return {
+                recolorables: [],
+                borderables: [],
+                fontEditable: undefined,
+                fontSizeable: undefined
+            };
+        }
+
+        function mapToEditPanelValues(config) {
+            return new Map([
+                ["platform_name", config.platform_name || defaultConfig.platform_name],
+                ["student_name", config.student_name || defaultConfig.student_name],
+                ["student_id", config.student_id || defaultConfig.student_id]
+            ]);
+        }
+
+        // Initialize
+        async function initializeApp() {
+            try {
+                const dataResult = await window.dataSdk.init(dataHandler);
+                if (!dataResult.isOk) {
+                    console.error("Failed to initialize data SDK");
+                    return;
+                }
+
+                if (window.elementSdk) {
+                    await window.elementSdk.init({
+                        defaultConfig,
+                        onConfigChange,
+                        mapToCapabilities,
+                        mapToEditPanelValues
+                    });
+                }
+
+                setupEventListeners();
+            } catch (error) {
+                console.error("Failed to initialize app:", error);
+            }
+        }
+
+        function setupEventListeners() {
+            // Navigation (handles switching and auto-closing on mobile)
+            const sidebar = document.getElementById('sidebar');
+
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const section = item.dataset.section;
+                    switchSection(section);
+                    if (window.innerWidth <= 768 && sidebar && sidebar.classList.contains('mobile-open')) {
+                        sidebar.classList.remove('mobile-open');
+                        const overlay = document.getElementById('sidebar-overlay');
+                        if (overlay) overlay.classList.remove('active');
+                        const toggleBtn = document.getElementById('sidebar-toggle');
+                        if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
+                    }
+                });
+            });
+
+            // Add score button
+            document.getElementById('add-score-btn').addEventListener('click', () => {
+                openScoreModal();
+            });
+
+            // Modal close buttons
+            document.getElementById('close-score-modal').addEventListener('click', closeScoreModal);
+            document.getElementById('cancel-score-btn').addEventListener('click', closeScoreModal);
+            document.getElementById('close-delete-modal').addEventListener('click', closeDeleteModal);
+            document.getElementById('cancel-delete-btn').addEventListener('click', closeDeleteModal);
+
+            // Form submissions
+            document.getElementById('score-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await saveScore();
+            });
+
+            document.getElementById('confirm-delete-btn').addEventListener('click', async () => {
+                await deleteScore();
+            });
+
+            document.getElementById('profile-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                showToast('Profile updated successfully!', 'success');
+            });
+
+            document.getElementById('preferences-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                showToast('Preferences saved successfully!', 'success');
+            });
+
+            // Logout — navigate to the login page (also attempt sign-out if Firebase is available)
+            document.getElementById('logout-btn').addEventListener('click', async () => {
+                try {
+                    // Try to sign out if a Firebase auth instance is available on window
+                    if (window.firebase && window.firebase.auth && typeof window.firebase.auth.signOut === 'function') {
+                        await window.firebase.auth().signOut();
+                    }
+                } catch (err) {
+                    // ignore sign-out errors; proceed to redirect
+                    console.warn('Sign out failed (or not available):', err);
+                }
+
+                showToast('Logged out successfully!', 'success');
+                // Redirect to the central login page
+                setTimeout(() => {
+                    window.location.href = '../login and register/login.html';
+                }, 600);
+            });
+
+            // Leaderboard filters
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                });
+            });
+
+            // Sidebar toggle and overlay (mobile)
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+            let previousActiveElement = null;
+            let trapFocusHandler = null;
+
+            function openSidebar() {
+                previousActiveElement = document.activeElement;
+                sidebar.classList.add('mobile-open');
+                if (sidebarOverlay) {
+                    sidebarOverlay.classList.add('active');
+                    sidebarOverlay.setAttribute('aria-hidden', 'false');
+                }
+                if (sidebarToggle) sidebarToggle.setAttribute('aria-expanded', 'true');
+
+                // focus trap: move focus to first focusable element inside sidebar
+                const focusables = sidebar.querySelectorAll('a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+                const firstFocusable = focusables[0];
+                const lastFocusable = focusables[focusables.length - 1];
+                if (firstFocusable) setTimeout(() => firstFocusable.focus(), 50);
+
+                trapFocusHandler = function(e) {
+                    if (e.key !== 'Tab') return;
+                    const nodes = sidebar.querySelectorAll('a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+                    if (!nodes.length) {
+                        e.preventDefault();
+                        return;
+                    }
+                    const first = nodes[0];
+                    const last = nodes[nodes.length - 1];
+                    if (e.shiftKey) {
+                        if (document.activeElement === first) {
+                            e.preventDefault();
+                            last.focus();
+                        }
+                    } else {
+                        if (document.activeElement === last) {
+                            e.preventDefault();
+                            first.focus();
+                        }
+                    }
+                };
+
+                document.addEventListener('keydown', trapFocusHandler);
+            }
+
+            function closeSidebar() {
+                sidebar.classList.remove('mobile-open');
+                if (sidebarOverlay) {
+                    sidebarOverlay.classList.remove('active');
+                    sidebarOverlay.setAttribute('aria-hidden', 'true');
+                }
+                if (sidebarToggle) sidebarToggle.setAttribute('aria-expanded', 'false');
+
+                if (trapFocusHandler) {
+                    document.removeEventListener('keydown', trapFocusHandler);
+                    trapFocusHandler = null;
+                }
+                if (previousActiveElement && typeof previousActiveElement.focus === 'function') {
+                    try { previousActiveElement.focus(); } catch (e) {}
+                }
+                previousActiveElement = null;
+            }
+
+            if (sidebarToggle && sidebar) {
+                sidebarToggle.addEventListener('click', () => {
+                    if (sidebar.classList.contains('mobile-open')) closeSidebar(); else openSidebar();
+                });
+            }
+
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', closeSidebar);
+            }
+
+            // Close sidebar on Escape and ensure responsive behavior on resize
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && sidebar && sidebar.classList.contains('mobile-open')) {
+                    closeSidebar();
+                }
+            });
+
+            window.addEventListener('resize', () => {
+                if (window.innerWidth > 768 && sidebar && sidebar.classList.contains('mobile-open')) {
+                    closeSidebar();
+                }
+            });
+
+            // Click outside modal to close
+            document.getElementById('score-modal').addEventListener('click', (e) => {
+                if (e.target.id === 'score-modal') closeScoreModal();
+            });
+            document.getElementById('delete-modal').addEventListener('click', (e) => {
+                if (e.target.id === 'delete-modal') closeDeleteModal();
+            });
+        }
+
+        // Called after content partials are loaded into #main-content-container
+        function afterContentLoad() {
+            // Bind add score button (safe: avoid double-binding)
+            const addBtn = document.getElementById('add-score-btn');
+            if (addBtn && !addBtn.dataset.bound) {
+                addBtn.addEventListener('click', () => openScoreModal());
+                addBtn.dataset.bound = 'true';
+            }
+
+            // Modal close buttons
+            const closeScore = document.getElementById('close-score-modal');
+            if (closeScore && !closeScore.dataset.bound) {
+                closeScore.addEventListener('click', closeScoreModal);
+                closeScore.dataset.bound = 'true';
+            }
+            const cancelScore = document.getElementById('cancel-score-btn');
+            if (cancelScore && !cancelScore.dataset.bound) {
+                cancelScore.addEventListener('click', closeScoreModal);
+                cancelScore.dataset.bound = 'true';
+            }
+
+            const closeDelete = document.getElementById('close-delete-modal');
+            if (closeDelete && !closeDelete.dataset.bound) {
+                closeDelete.addEventListener('click', closeDeleteModal);
+                closeDelete.dataset.bound = 'true';
+            }
+            const cancelDelete = document.getElementById('cancel-delete-btn');
+            if (cancelDelete && !cancelDelete.dataset.bound) {
+                cancelDelete.addEventListener('click', closeDeleteModal);
+                cancelDelete.dataset.bound = 'true';
+            }
+
+            const scoreForm = document.getElementById('score-form');
+            if (scoreForm && !scoreForm.dataset.bound) {
+                scoreForm.addEventListener('submit', async (e) => { e.preventDefault(); await saveScore(); });
+                scoreForm.dataset.bound = 'true';
+            }
+
+            const confirmDelete = document.getElementById('confirm-delete-btn');
+            if (confirmDelete && !confirmDelete.dataset.bound) {
+                confirmDelete.addEventListener('click', async () => { await deleteScore(); });
+                confirmDelete.dataset.bound = 'true';
+            }
+
+            // Leaderboard filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if (!btn.dataset.bound) {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                    });
+                    btn.dataset.bound = 'true';
+                }
+            });
+
+            // Re-run UI updates that depend on DOM
+            if (window.updateDashboard) window.updateDashboard();
+            if (window.renderScores) window.renderScores();
+            if (window.updateLeaderboard) window.updateLeaderboard();
+        }
+
+        function switchSection(sectionName) {
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            document.querySelector(`[data-section="${sectionName}"]`).classList.add('active');
+
+            document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
+            document.getElementById(`${sectionName}-section`).classList.add('active');
+        }
+
+        function updateDashboard() {
+            const totalScores = allScores.length;
+            const currentWeek = totalScores > 0 ? Math.max(...allScores.map(s => s.week_number)) : 1;
+            const avgScore = totalScores > 0 ? Math.round(allScores.reduce((sum, s) => sum + s.score, 0) / totalScores) : 0;
+            const highestScore = totalScores > 0 ? Math.max(...allScores.map(s => s.score)) : 0;
+            const uniqueWeeks = new Set(allScores.map(s => s.week_number)).size;
+
+            document.getElementById('current-week').textContent = currentWeek;
+            document.getElementById('total-scores').textContent = totalScores;
+            document.getElementById('average-score').textContent = avgScore;
+            document.getElementById('highest-score').textContent = highestScore;
+            document.getElementById('total-weeks').textContent = uniqueWeeks;
+
+            // Calculate rank
+            const studentTotalScore = allScores.reduce((sum, s) => sum + s.score, 0);
+            const leaderboard = [...mockLeaderboard];
+            const studentIndex = leaderboard.findIndex(s => s.id === CURRENT_STUDENT_ID);
+            if (studentIndex !== -1) {
+                leaderboard[studentIndex].score = studentTotalScore;
+            }
+            leaderboard.sort((a, b) => b.score - a.score);
+            const rank = leaderboard.findIndex(s => s.id === CURRENT_STUDENT_ID) + 1;
+            document.getElementById('rank-position').textContent = rank > 0 ? `#${rank}` : '-';
+        }
+
+        function renderScores() {
+            const grid = document.getElementById('scores-grid');
+            
+            if (allScores.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📊</div>
+                        <div class="empty-text">No scores yet</div>
+                        <div class="empty-subtext">Add your first weekly score to get started</div>
+                    </div>
+                `;
+                return;
+            }
+
+            const sortedScores = [...allScores].sort((a, b) => a.week_number - b.week_number);
+
+            grid.innerHTML = sortedScores.map(score => `
+                <div class="score-card">
+                    <div class="score-week">Week ${score.week_number}</div>
+                    <div class="score-value">${score.score}</div>
+                    <div class="score-subject">${score.subject}</div>
+                    <div class="score-actions">
+                        <button class="score-action-btn edit" onclick="editScore('${score.__backendId}')">✏️</button>
+                        <button class="score-action-btn delete" onclick="confirmDeleteScore('${score.__backendId}')">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateLeaderboard() {
+            const list = document.getElementById('leaderboard-list');
+            const studentTotalScore = allScores.reduce((sum, s) => sum + s.score, 0);
+            
+            const leaderboard = [...mockLeaderboard];
+            const studentIndex = leaderboard.findIndex(s => s.id === CURRENT_STUDENT_ID);
+            if (studentIndex !== -1) {
+                leaderboard[studentIndex].score = studentTotalScore;
+            }
+            leaderboard.sort((a, b) => b.score - a.score);
+
+            list.innerHTML = leaderboard.map((student, index) => {
+                const rank = index + 1;
+                const rankClass = rank === 1 ? 'top-1' : rank === 2 ? 'top-2' : rank === 3 ? 'top-3' : 'other';
+                const isCurrentStudent = student.id === CURRENT_STUDENT_ID;
+
+                return `
+                    <div class="leaderboard-item ${isCurrentStudent ? 'current-student' : ''}">
+                        <div class="rank-badge ${rankClass}">${rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank}</div>
+                        <div class="leaderboard-avatar">${student.avatar}</div>
+                        <div class="leaderboard-info">
+                            <div class="leaderboard-name">${student.name} ${isCurrentStudent ? '(You)' : ''}</div>
+                            <div class="leaderboard-id">${student.id}</div>
+                        </div>
+                        <div class="leaderboard-score">${student.score}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openScoreModal(score = null) {
+            editingScore = score;
+            const modal = document.getElementById('score-modal');
+            const title = document.getElementById('score-modal-title');
+            const submitBtn = document.getElementById('submit-score-btn');
+
+            if (score) {
+                title.textContent = 'Edit Score';
+                submitBtn.textContent = 'Update Score';
+                document.getElementById('score-week').value = score.week_number;
+                document.getElementById('score-subject').value = score.subject;
+                document.getElementById('score-value').value = score.score;
+            } else {
+                title.textContent = 'Add Score';
+                submitBtn.textContent = 'Add Score';
+                document.getElementById('score-form').reset();
+            }
+
+            modal.classList.add('active');
+        }
+
+        function closeScoreModal() {
+            document.getElementById('score-modal').classList.remove('active');
+            document.getElementById('score-form').reset();
+            editingScore = null;
+        }
+
+        function confirmDeleteScore(scoreId) {
+            deletingScore = allScores.find(s => s.__backendId === scoreId);
+            document.getElementById('delete-modal').classList.add('active');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('delete-modal').classList.remove('active');
+            deletingScore = null;
+        }
+
+        async function saveScore() {
+            if (recordCount >= 999 && !editingScore) {
+                showToast('Maximum limit of 999 scores reached!', 'error');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submit-score-btn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = editingScore ? 'Updating...' : 'Adding...';
+
+            const scoreData = {
+                score_id: editingScore ? editingScore.score_id : generateScoreId(),
+                student_id: CURRENT_STUDENT_ID,
+                week_number: parseInt(document.getElementById('score-week').value),
+                score: parseInt(document.getElementById('score-value').value),
+                subject: document.getElementById('score-subject').value,
+                created_at: new Date().toISOString()
+            };
+
+            try {
+                let result;
+                if (editingScore) {
+                    result = await window.dataSdk.update({ ...scoreData, __backendId: editingScore.__backendId });
+                } else {
+                    result = await window.dataSdk.create(scoreData);
+                }
+
+                if (result.isOk) {
+                    showToast(editingScore ? 'Score updated!' : 'Score added!', 'success');
+                    closeScoreModal();
+                } else {
+                    showToast('Failed to save score', 'error');
+                }
+            } catch (error) {
+                showToast('An error occurred', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = editingScore ? 'Update Score' : 'Add Score';
+            }
+        }
+
+        async function deleteScore() {
+            if (!deletingScore) return;
+
+            const deleteBtn = document.getElementById('confirm-delete-btn');
+            deleteBtn.disabled = true;
+            deleteBtn.textContent = 'Deleting...';
+
+            try {
+                const result = await window.dataSdk.delete(deletingScore);
+
+                if (result.isOk) {
+                    showToast('Score deleted!', 'success');
+                    closeDeleteModal();
+                } else {
+                    showToast('Failed to delete score', 'error');
+                }
+            } catch (error) {
+                showToast('An error occurred', 'error');
+            } finally {
+                deleteBtn.disabled = false;
+                deleteBtn.textContent = 'Delete Score';
+            }
+        }
+
+        function editScore(scoreId) {
+            const score = allScores.find(s => s.__backendId === scoreId);
+            if (score) {
+                openScoreModal(score);
+            }
+        }
+
+        function generateScoreId() {
+            return 'score_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <div class="toast-icon">${type === 'success' ? '✓' : '✕'}</div>
+                <div class="toast-text">${message}</div>
+            `;
+            document.body.appendChild(toast);
+
+            setTimeout(() => toast.classList.add('show'), 100);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        window.editScore = editScore;
+        window.confirmDeleteScore = confirmDeleteScore;
+
+        // initialize after the sidebar has been loaded. If the sidebar already exists, init immediately.
+        if (document.getElementById('sidebar')) {
+            initializeApp();
+        } else {
+            document.addEventListener('sidebarLoaded', initializeApp);
+        }
+    </script>
+
+    <script type="module">
+        import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+        import { app } from '../DB/firebase.js';
+
+        const auth = getAuth(app);
+
+        function bindFirebaseLogout() {
+            const btn = document.getElementById('logout-btn');
+            if (!btn) return;
+            // Bind signOut and redirect; this runs after the sidebar partial is loaded.
+            btn.addEventListener('click', async () => {
+                try {
+                    await signOut(auth);
+                } catch (err) {
+                    console.warn('Firebase signOut failed or not available:', err);
+                }
+                // Ensure navigation to the login page
+                window.location.href = '../login and register/login.html';
+            });
+        }
+
+        if (document.getElementById('sidebar')) bindFirebaseLogout();
+        document.addEventListener('sidebarLoaded', bindFirebaseLogout);
+    </script>
+
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a1001a7d138a9ab',t:'MTc2MzU1ODQ0Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
