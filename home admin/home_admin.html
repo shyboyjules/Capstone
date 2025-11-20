@@ -839,14 +839,12 @@
   <div class="dashboard-layout"><!-- Sidebar -->
    <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
-     <div class="logo">
-      <div class="logo-icon">
-       🎓
-      </div>
-      <div class="logo-text" id="school-name">
-       Riverside Academy
-      </div>
+    <div class="logo">
+     <img src="../assets/mathquest-logo.png" alt="MathQuest logo" class="school-logo" />
+     <div class="logo-text" id="school-name">
+      MathQuest
      </div>
+    </div>
     </div>
         <nav id="sidebar-nav-container" class="sidebar-nav" aria-label="Main menu">
             <!-- admin nav will be loaded from partial -->
@@ -880,11 +878,11 @@
       </div>
       <div class="admin-profile">
        <div class="admin-avatar" id="admin-avatar">
-        SJ
+        HA
        </div>
        <div class="admin-info">
         <div class="admin-name" id="admin-name">
-         Sarah Johnson
+         Hey Admin!
         </div>
         <div class="admin-role">
          Administrator
@@ -1457,6 +1455,47 @@
 
         // Initialize the application
         initializeApp();
+    </script>
+    <script>
+        // Bind logout button: try multiple signOut fallbacks then redirect to login
+        function bindLogout() {
+            const btn = document.querySelector('.logout-btn');
+            if (!btn) return;
+            if (btn.dataset.boundLogout) return;
+            btn.dataset.boundLogout = '1';
+            btn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                try {
+                    // Try common Firebase v9+ modular global helpers if exposed
+                    if (window.firebase && window.firebase.auth && typeof window.firebase.auth === 'function') {
+                        try { await window.firebase.auth().signOut(); } catch (err) { /* ignore */ }
+                    }
+
+                    // Try older namespaced API: firebase.auth().signOut()
+                    if (window.firebase && window.firebase.auth && typeof window.firebase.auth.signOut === 'function') {
+                        try { await window.firebase.auth.signOut(); } catch (err) { /* ignore */ }
+                    }
+
+                    // If a named auth instance exists on window (e.g., auth), try calling its signOut
+                    if (window.auth && typeof window.auth.signOut === 'function') {
+                        try { await window.auth.signOut(); } catch (err) { /* ignore */ }
+                    }
+                } catch (err) {
+                    console.warn('Logout signOut attempts failed:', err);
+                } finally {
+                    // Always redirect to login page after attempting sign-out
+                    try {
+                        window.location.href = '../login and register/login.html';
+                    } catch (redirErr) {
+                        // last resort: replace location
+                        window.location.replace('../login and register/login.html');
+                    }
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', bindLogout);
+        window.addEventListener('sidebar:injected', bindLogout);
     </script>
     <script src="../js/sidebar.js" defer></script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a0fa3eb70eba9ab',t:'MTc2MzU1NDYwMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
