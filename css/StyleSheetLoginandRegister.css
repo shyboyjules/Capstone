@@ -1,71 +1,124 @@
-/* General styles */
+/* === GLOBAL BACKGROUND === */
 body {
     font-family: 'Segoe UI', Arial, sans-serif;
-    background: linear-gradient(120deg, #2980b9, #6dd5fa);
-    min-height: 100vh;
+
+    background-image: url('../Assets/loginbg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
     margin: 0;
+    height: 100vh;
+
     display: flex;
     align-items: center;
     justify-content: center;
 }
-.form-container {
-    background: #fff;
-    padding: 2.5em 2em;
-    border-radius: 12px;
-    box-shadow: 0 4px 24px rgba(44, 62, 80, 0.15);
+
+/* === DARK BLUR OVERLAY === */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
-    max-width: 400px;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(3px);
+    z-index: -1;
 }
+
+/* === FORM CONTAINER (Glass Box) === */
+.form-container {
+    width: 100%;
+    max-width: 500px;
+    padding: 35px 40px;
+
+    border-radius: 22px;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(8px);
+
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+
+    color: white;
+}
+
+/* === TITLE === */
 .form-container h2 {
     text-align: center;
-    margin-bottom: 1.5em;
-    color: #2980b9;
+    margin-bottom: 30px;
+    font-size: 1.9em;
+    font-weight: bold;
 }
+
+/* === FORM GROUPS === */
 .form-group {
-    margin-bottom: 1.2em;
+    margin-bottom: 18px;
 }
+
 .form-group label {
     display: block;
-    margin-bottom: 0.5em;
-    color: #34495e;
+    margin-bottom: 6px;
+    color: #ffffff;
     font-weight: 500;
+    font-size: 1em;
 }
+
+/* === INPUT FIELDS === */
 .form-group input {
     width: 100%;
-    padding: 0.7em;
-    border: 1px solid #b2bec3;
-    border-radius: 6px;
-    font-size: 1em;
-    transition: border-color 0.2s;
-}
-.form-group input:focus {
-    border-color: #2980b9;
+    padding: 14px 16px;
+
+    border-radius: 10px;
+    border: none;
     outline: none;
+
+    font-size: 1em;
+    background: rgba(255, 255, 255, 0.93);
+
+    transition: box-shadow 0.2s;
 }
+
+.form-group input:focus {
+    box-shadow: 0 0 8px #69b7ff;
+}
+
+/* === SUBMIT BUTTON === */
 .button {
     width: 100%;
-    padding: 0.8em;
-    background: #2980b9;
-    color: #fff;
+    padding: 15px;
     border: none;
-    border-radius: 6px;
-    font-size: 1em;
+
+    border-radius: 10px;
+
+    background: #ffffff;
+    color: #333;
+    font-size: 1.1em;
     font-weight: bold;
+
     cursor: pointer;
-    transition: background 0.2s;
-    margin-top: 0.5em;
+    transition: 0.25s ease-in-out;
 }
+
 .button:hover {
-    background: #2574a9;
+    background: #f0f0f0;
 }
+
+.button:active {
+    transform: scale(0.97);
+}
+
+/* === SWITCH LINK === */
 .switch-link {
     display: block;
     text-align: center;
-    margin-top: 1em;
-    color: #2980b9;
-    text-decoration: none;
+    margin-top: 18px;
+
+    color: #dfefff;
     font-size: 0.95em;
+    text-decoration: none;
 }
+
 .switch-link:hover {
     text-decoration: underline;
 }
