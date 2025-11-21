@@ -32,7 +32,7 @@ export function protectRoute(requiredRole) {
         // ❌ If wrong role → force out
         if (role !== requiredRole) {
             alert("Access denied. You are not authorized to view this page.");
-            window.location.href = "./login and register/login.html";
+            window.location.href = "../login and register/login.html";
         }
     });
 }
