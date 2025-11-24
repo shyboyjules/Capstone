@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Teacher – Reports</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="dashboard-bg">
+
+<div class="dashboard-wrapper">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div>
+      <div class="logo-area">
+        <img src="../img/logo.png" alt="Logo" class="logo" />
+        <h2>MathQuest</h2>
+      </div>
+
+      <div class="user-profile">
+        <div class="user-info">
+          <h3>Teacher</h3>
+          <p>Faculty</p>
+        </div>
+      </div>
+
+      <nav class="menu">
+        <p class="menu-title">MAIN MENU</p>
+        <a href="home_teacher.html" class="menu-item">🏠 Dashboard</a>
+        <a href="teacher-students.html" class="menu-item">👩‍🏫 View Students</a>
+        <a href="teacher-reports.html" class="menu-item active">📊 Reports</a>
+       
+
+        <p class="menu-title">ACCOUNT</p>
+        <a href="teacher-settings.html" class="menu-item">⚙ Settings</a>
+      </nav>
+    </div>
+
+    <div class="logout-area">
+      <button class="logout-btn" onclick="window.location.href='../login and register/login.html'">
+        🚪 Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    <h1 class="page-title">📊 Student Reports</h1>
+    <p class="subtitle">Generate progress reports & export them</p>
+
+    <!-- FILTERS -->
+    <div class="report-filters">
+      <select id="filterGrade">
+        <option value="all">All Grades</option>
+        <option value="Grade 10">Grade 10</option>
+        <option value="Grade 9">Grade 9</option>
+        <option value="Grade 8">Grade 8</option>
+      </select>
+
+      <select id="filterStatus">
+        <option value="all">All Status</option>
+        <option value="PASS">PASS</option>
+        <option value="FAIL">FAIL</option>
+      </select>
+
+      <div>
+        <label>Start Date:</label>
+        <input type="date" id="startDate">
+      </div>
+
+      <div>
+        <label>End Date:</label>
+        <input type="date" id="endDate">
+      </div>
+
+      <button id="exportBtn" class="export-btn">📥 Export Report</button>
+    </div>
+
+    <!-- REPORT TABLE -->
+    <div class="report-table-wrapper">
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>Student ID</th>
+            <th>Name</th>
+            <th>Grade</th>
+            <th>Average Score</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="reportTableBody">
+          <tr data-grade="Grade 10" data-status="PASS">
+            <td>2022304579</td>
+            <td>Jules Apuya</td>
+            <td>Grade 10</td>
+            <td>95</td>
+            <td><span class="status-pass">PASS</span></td>
+          </tr>
+          <tr data-grade="Grade 10" data-status="FAIL">
+            <td>2022304001</td>
+            <td>Maria Santos</td>
+            <td>Grade 10</td>
+            <td>65</td>
+            <td><span class="status-fail">FAIL</span></td>
+          </tr>
+          <tr data-grade="Grade 9" data-status="PASS">
+            <td>2023304022</td>
+            <td>John Reyes</td>
+            <td>Grade 9</td>
+            <td>88</td>
+            <td><span class="status-pass">PASS</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+</div>
+
+<!-- JAVASCRIPT: FILTERING AND EXPORT -->
+<script>
+// FILTER TABLE DATA
+const gradeFilter = document.getElementById("filterGrade");
+const statusFilter = document.getElementById("filterStatus");
+const rows = document.querySelectorAll("#reportTableBody tr");
+
+function filterReports() {
+  const grade = gradeFilter.value;
+  const status = statusFilter.value;
+
+  rows.forEach(row => {
+    const matchGrade = grade === "all" || row.dataset.grade === grade;
+    const matchStatus = status === "all" || row.dataset.status === status;
+    row.style.display = matchGrade && matchStatus ? "" : "none";
+  });
+}
+
+gradeFilter.addEventListener("change", filterReports);
+statusFilter.addEventListener("change", filterReports);
+
+// EXPORT (placeholder)
+document.getElementById("exportBtn").addEventListener("click", () => {
+  alert("Exporting report... (can be connected to PHP/PDF)");
+});
+</script>
+
+</body>
+</html>

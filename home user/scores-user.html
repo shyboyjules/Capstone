@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>My Scores – MathQuest</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body class="dashboard-bg">
+
+<div class="dashboard-wrapper">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div>
+      <div class="logo-area">
+        <img src="../img/logo.png" alt="Logo" class="logo" />
+        <h2>MathQuest</h2>
+      </div>
+
+      <div class="user-profile">
+        <div class="user-info">
+          <h3>Jules Apuya</h3>
+          <p>2022304579</p>
+        </div>
+      </div>
+
+      <nav class="menu">
+        <p class="menu-title">MAIN MENU</p>
+        <a href="Home.html" class="menu-item">🏠 Dashboard</a>
+        <a href="scores-user.html" class="menu-item active">📊 My Scores</a>
+        <a href="leaderboard-user.html" class="menu-item">🏆 Leaderboard</a>
+
+        <p class="menu-title">ACCOUNT</p>
+        <a href="settings-user.html" class="menu-item">⚙ Settings</a>
+      </nav>
+    </div>
+
+    <button class="logout-btn" onclick="window.location.href='../login and register/login.html'">
+      🚪 Log Out
+    </button>
+  </aside>
+
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+
+    <div class="welcome-card">
+      <div>
+        <h1>📊 My Scores</h1>
+        <p>Your weekly performance is shown below.</p>
+      </div>
+    </div>
+
+    <!-- WRAPPED CONTENT (IMPORTANT) -->
+    <div class="scores-wrapper">
+      <table class="scores-table">
+        <thead>
+          <tr>
+            <th>Week</th>
+            <th>Activity</th>
+            <th>Score</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Week 1</td>
+            <td>Basic Algebra</td>
+            <td>85%</td>
+            <td class="status-completed">✔ Completed</td>
+          </tr>
+          <tr>
+            <td>Week 2</td>
+            <td>Fractions</td>
+            <td>76%</td>
+            <td class="status-completed">✔ Completed</td>
+          </tr>
+          <tr>
+            <td>Week 3</td>
+            <td>Geometry</td>
+            <td>—</td>
+            <td class="status-pending">⏳ Pending</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+
+</div>
+
+</body>
+</html>

@@ -15,6 +15,8 @@ import {
   getDoc
 } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
+
+
 import { app } from "./firebase.js";
 
 const auth = getAuth(app);
@@ -102,4 +104,8 @@ onAuthStateChanged(auth, (user) => {
   } else {
     console.log("🚪 Signed out");
   }
+
+  
 });
+
+

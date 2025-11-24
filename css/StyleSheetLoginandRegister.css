@@ -1,71 +1,201 @@
-/* General styles */
+/* FULLSCREEN BACKGROUND IMAGE */
 body {
-    font-family: 'Segoe UI', Arial, sans-serif;
-    background: linear-gradient(120deg, #2980b9, #6dd5fa);
-    min-height: 100vh;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  background: url('../img/loginv2.png') center center / cover no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  margin: 0;
+  font-family: Arial, sans-serif;
+  position: relative;
 }
+
+/* DARK OVERLAY */
+body::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  backdrop-filter: blur(2px);
+  background: rgba(0, 0, 0, 0.45);
+}
+
+/* LOGIN CONTAINER */
 .form-container {
-    background: #fff;
-    padding: 2.5em 2em;
-    border-radius: 12px;
-    box-shadow: 0 4px 24px rgba(44, 62, 80, 0.15);
-    width: 100%;
-    max-width: 400px;
+  position: relative;
+  z-index: 2;
+  background: rgba(0, 0, 0, 0.70);
+  padding: 2.5rem;
+  width: 420px;
+  height: 300px;
+  border-radius: 13px;
+  backdrop-filter: blur(6px);
+  color: white;
+  text-align: left;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  /* 👇 ADD THIS */
+  margin-top: 150px;    /* adjust this value if needed */
 }
+
+
+/* TITLE */
 .form-container h2 {
-    text-align: center;
-    margin-bottom: 1.5em;
-    color: #2980b9;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-size: 1.9rem;
+  font-weight: bold;
 }
-.form-group {
-    margin-bottom: 1.2em;
-}
+
+/* LABEL */
 .form-group label {
-    display: block;
-    margin-bottom: 0.5em;
-    color: #34495e;
-    font-weight: 500;
+  font-weight: bold;
+  margin-bottom: 5px;
+  display: block;
 }
+
+/* INPUT FIELD */
 .form-group input {
-    width: 100%;
-    padding: 0.7em;
-    border: 1px solid #b2bec3;
-    border-radius: 6px;
-    font-size: 1em;
-    transition: border-color 0.2s;
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 17px;
+  border-radius: 6px;
+  border: none;
+  background: #ebf1ff;
+  font-size: 1rem;
 }
-.form-group input:focus {
-    border-color: #2980b9;
-    outline: none;
-}
+
+/* BUTTON */
 .button {
-    width: 100%;
-    padding: 0.8em;
-    background: #2980b9;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    font-size: 1em;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background 0.2s;
-    margin-top: 0.5em;
+  width: 100%;
+  padding: 12px;
+  background: #f7c84b;
+  color: #000;
+  font-weight: bold;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: 0.2s ease-in-out;
+}
+
+.button:hover {
+  background: #e6b63d;
+  transform: translateY(-2px);
+}
+
+/* REGISTER LINK */
+.switch-link {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+.switch-link a {
+  color: #d6ba48;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.switch-link a:hover {
+  text-decoration: underline;
+}
+
+/* FULLSCREEN BACKGROUND IMAGE (same as login) */
+body {
+  background: url('../img/registerv2.png') center center / cover no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  margin: 0;
+  font-family: Arial, sans-serif;
+  position: relative;
+}
+
+/* DARK OVERLAY */
+body::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  backdrop-filter: blur(2px);
+  background: rgba(0, 0, 0, 0.45);
+}
+
+/* REGISTER CONTAINER (FIXED) */
+.form-container {
+  position: relative;
+  z-index: 2;
+  background: rgba(0, 0, 0, 0.70);
+  padding: 2.5rem;
+  width: 450px;        /* wider than login */
+  height: auto;        /* adjusts automatically */
+  border-radius: 13px;
+  backdrop-filter: blur(6px);
+  color: white;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-top: 150px;   /* same as login */
+}
+
+/* TITLE */
+.form-container h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-size: 1.9rem;
+  font-weight: bold;
+}
+
+/* LABELS */
+.form-group label {
+  font-weight: bold;
+  margin-bottom: 5px;
+  display: block;
+}
+
+/* INPUTS */
+.form-group input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 17px;
+  border-radius: 6px;
+  border: none;
+  background: #ebf1ff;
+  font-size: 1rem;
+}
+
+/* BUTTON */
+.button {
+  width: 100%;
+  padding: 12px;
+  background: #f7c84b;
+  color: #000;
+  font-weight: bold;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: 0.2s ease-in-out;
 }
 .button:hover {
-    background: #2574a9;
+  background: #e6b63d;
+  transform: translateY(-2px);
 }
+
+/* SWITCH LINK (LOGIN) */
 .switch-link {
-    display: block;
-    text-align: center;
-    margin-top: 1em;
-    color: #2980b9;
-    text-decoration: none;
-    font-size: 0.95em;
+  text-align: center;
+  font-size: 0.95rem;
+  margin-top: 12px;
+  color: #d6ba48;
 }
-.switch-link:hover {
-    text-decoration: underline;
+.switch-link a {
+  color: #d6ba48;
+  text-decoration: none;
+  font-weight: bold;
+}
+.switch-link a:hover {
+  text-decoration: underline;
 }

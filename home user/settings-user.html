@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Settings – MathQuest</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body class="dashboard-bg">
+
+<div class="dashboard-wrapper">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div>
+      <div class="logo-area">
+        <img src="../img/logo.png" alt="Logo" class="logo" />
+        <h2>MathQuest</h2>
+      </div>
+
+      <div class="user-profile">
+        <div class="user-info">
+          <h3>Jules Apuya</h3>
+          <p>2022304579</p>
+        </div>
+      </div>
+      
+      <!-- FIXED MENU STRUCTURE -->
+      <nav class="menu">
+        <p class="menu-title">MAIN MENU</p>
+        <a href="Home.html" class="menu-item">🏠 Dashboard</a>
+        <a href="scores-user.html" class="menu-item">📊 My Scores</a>
+        <a href="leaderboard-user.html" class="menu-item">🏆 Leaderboard</a>
+
+        <p class="menu-title">ACCOUNT</p>
+        <a href="settings-user.html" class="menu-item active">⚙ Settings</a>
+      </nav>
+    </div>
+
+    <!-- FIXED LOGOUT BUTTON POSITION -->
+    <div class="logout-area">
+      <button class="logout-btn" onclick="window.location.href='../login and register/login.html'">
+        🚪 Log Out
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    <h1 class="page-title">⚙ User Settings</h1>
+    <p class="subtitle">Manage your preferences and account settings</p>
+
+    <div class="settings-container">
+
+      <!-- Account Settings -->
+      <div class="settings-card">
+        <h2>👤 Account</h2>
+        <label>Change Display Name</label>
+        <input type="text" placeholder="Enter new name" />
+
+        <label>Change Email</label>
+        <input type="email" placeholder="Enter new email" />
+
+        <label>Change Password</label>
+        <input type="password" placeholder="Enter new password" />
+        
+        <button class="save-btn">Save Changes</button>
+      </div>
+
+      <!-- Danger Zone -->
+      <div class="settings-card danger-zone">
+        <h2>⚠ Danger Zone</h2>
+        <p>You can't undo account deletion. Please be careful.</p>
+        <button class="delete-btn">Delete Account</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- JavaScript (future functionality) -->
+<script>
+  // Save Button
+  document.querySelectorAll('.save-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      alert('Settings saved successfully!');
+    });
+  });
+
+  // Delete Button
+  document.querySelector('.delete-btn').addEventListener('click', () => {
+    if (confirm('Are you sure you want to delete your account?')) {
+      alert('Account deleted.');
+    }
+  });
+</script>
+
+</body>
+</html>

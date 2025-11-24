@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin – Manage Users</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body class="dashboard-bg">
+
+<div class="dashboard-wrapper">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div>
+      <div class="logo-area">
+        <img src="../img/logo.png" class="logo" alt="Logo">
+        <h2>MATHQUEST</h2>
+      </div>
+
+      <nav class="menu">
+        <p class="menu-title">ADMIN MENU</p>
+        <a href="home_admin.html" class="menu-item">📊 Dashboard</a>
+        <a href="admin-users.html" class="menu-item active">👥 Users</a>
+        
+        <p class="menu-title">ACCOUNT</p>
+        <a href="admin-settings.html" class="menu-item">⚙ Settings</a>
+      </nav>
+    </div>
+
+    <div class="logout-area">
+      <button class="logout-btn" id="logoutBtn">🚪 Logout</button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    <h1 class="page-title">👥 User Management</h1>
+    <p class="subtitle">View, manage, and search users</p>
+
+    <!-- SEARCH BAR -->
+    <div class="search-area">
+      <input type="text" id="searchInput" placeholder="🔍 Search users by name or email..." class="search-input">
+      <button class="save-btn" onclick="filterUsers()">Search</button>
+    </div>
+
+    <!-- USERS TABLE -->
+    <div class="table-container">
+      <table class="scores-table" id="userTable">
+        <thead>
+          <tr>
+            <th>Full Name</th>
+            <th>Role</th>
+            <th>Email</th>
+            <th>Status</th>
+            <th style="text-align:center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Sarah Johnson</td>
+            <td>Teacher</td>
+            <td>sarah@school.com</td>
+            <td class="status-completed">Active</td>
+            <td style="text-align:center">
+              <button class="btn-action">View</button>
+              <button class="btn-warning">Edit</button>
+              <button class="btn-danger">Delete</button>
+            </td>
+          </tr>
+          <tr>
+            <td>John Reyes</td>
+            <td>Student</td>
+            <td>john@student.com</td>
+            <td class="status-pending">Inactive</td>
+            <td style="text-align:center">
+              <button class="btn-action">View</button>
+              <button class="btn-warning">Edit</button>
+              <button class="btn-danger">Delete</button>
+            </td>
+          </tr>
+          <tr>
+            <td>Maria Santos</td>
+            <td>Student</td>
+            <td>maria@student.com</td>
+            <td class="status-completed">Active</td>
+            <td style="text-align:center">
+              <button class="btn-action">View</button>
+              <button class="btn-warning">Edit</button>
+              <button class="btn-danger">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+</div>
+
+<!-- JS FOR SEARCH FILTER -->
+<script>
+  function filterUsers() {
+    const input = document.getElementById("searchInput").value.toLowerCase();
+    const table = document.getElementById("userTable");
+    const rows = table.getElementsByTagName("tr");
+
+    for (let i = 1; i < rows.length; i++) {
+      let cells = rows[i].getElementsByTagName("td");
+      let match = false;
+
+      for (let j = 0; j < cells.length - 1; j++) {
+        if (cells[j].textContent.toLowerCase().includes(input)) {
+          match = true;
+          break;
+        }
+      }
+      rows[i].style.display = match ? "" : "none";
+    }
+  }
+</script>
+
+</body>
+</html>

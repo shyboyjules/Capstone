@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="../css/StyleSheetLoginandRegister.css">
 </head>
 <body>
+
   <div class="form-container">
     <h2>User Registration</h2>
     <form id="registerForm">
@@ -33,7 +34,9 @@
       <button type="submit" class="button">Register</button>
     </form>
 
-    <a href="login.html" class="switch-link">Already have an account? Login</a>
+    <p class="switch-link">
+      Already have an account? <a href="login.html">Login</a>
+    </p>
   </div>
 
   <script type="module">
@@ -47,35 +50,20 @@
       const password = document.getElementById("password").value;
       const confirmPassword = document.getElementById("confirm-password").value;
 
-      console.log({ username, email, password, confirmPassword }); // ✅ check values
-
-      if (!username || !email || !password || !confirmPassword) {
-        alert("Please fill in all fields.");
-        return;
-      }
-
-      if (password.length < 6) {
-        alert("Password must be at least 6 characters long.");
-        return;
-      }
-
       if (password !== confirmPassword) {
         alert("Passwords do not match!");
         return;
       }
 
       try {
-        console.log("🚀 Registering user...");
         const user = await registerUser(email, password, username, "user");
-        console.log("✅ Registration success:", user);
-
-        alert("✅ Registration successful! You can now log in.");
+        alert("Registration successful! You can now log in.");
         window.location.href = "login.html";
       } catch (error) {
-        console.error("❌ Registration failed:", error);
         alert("Error: " + error.message);
       }
     });
   </script>
+
 </body>
 </html>

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Settings – MathQuest</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+
+<body class="dashboard-bg">
+
+<div class="dashboard-wrapper">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div>
+      <div class="logo-area">
+        <img src="../img/logo.png" class="logo" alt="Logo">
+        <h2>MATHQUEST</h2>
+      </div>
+
+      <nav class="menu">
+        <p class="menu-title">ADMIN MENU</p>
+        <a href="home_admin.html" class="menu-item">📊 Dashboard</a>
+        <a href="admin-users.html" class="menu-item">👥 Users</a>
+        
+        <p class="menu-title">ACCOUNT</p>
+        <a href="admin-settings.html" class="menu-item active">⚙ Settings</a>
+      </nav>
+    </div>
+
+    <div class="logout-area">
+      <button class="logout-btn" id="logoutBtn">🚪 Logout</button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    <h1 class="page-title">⚙ Admin Settings</h1>
+    <p class="subtitle">Manage system preferences and account settings</p>
+
+    <div class="settings-container">
+
+      <!-- Account Section -->
+      <div class="settings-card">
+        <h2>👤 Account Information</h2>
+        <label>Display Name</label>
+        <input type="text" placeholder="Enter new name">
+
+        <label>Email</label>
+        <input type="email" placeholder="Enter new email">
+
+        <label>Password</label>
+        <input type="password" placeholder="Enter new password">
+
+        <button class="save-btn">Save Changes</button>
+      </div>
+
+    
+
+      <!-- System Settings -->
+      <div class="settings-card">
+        <h2>⚡ System Configuration</h2>
+        <label>Enable Maintenance Mode</label>
+        <select>
+          <option>Disabled</option>
+          <option>Enabled</option>
+        </select>
+
+        <label>Auto Backup</label>
+        <select>
+          <option>Daily</option>
+          <option>Weekly</option>
+          <option>Monthly</option>
+        </select>
+
+        <button class="save-btn">Save System Settings</button>
+      </div>
+
+      <!-- Danger Zone -->
+      <div class="settings-card danger-zone">
+        <h2>⚠ Danger Zone</h2>
+        <p>Deleting an Admin Account is permanent. Please proceed with caution.</p>
+        <button class="delete-btn">Delete Admin Account</button>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- JS FUNCTIONALITY -->
+<script>
+  // Save success alert
+  document.querySelectorAll('.save-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      alert('Settings saved successfully!');
+    });
+  });
+
+  // Delete Button Confirmation
+  document.querySelector('.delete-btn').addEventListener('click', () => {
+    if (confirm('Are you sure you want to delete your admin account?')) {
+      alert('Admin account deleted.');
+    }
+  });
+
+  // Dark mode toggle
+  const themeSelector = document.getElementById("themeSelector");
+  themeSelector.addEventListener("change", () => {
+    if (themeSelector.value === "dark") {
+      document.body.style.background = "#1e1e2f";
+    } else {
+      document.body.style.background = "";
+    }
+  });
+</script>
+
+</body>
+</html>

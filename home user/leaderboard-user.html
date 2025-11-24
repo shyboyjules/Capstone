@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Leaderboard – MathQuest</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body class="dashboard-bg">
+
+<div class="dashboard-wrapper">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div>
+      <div class="logo-area">
+        <img src="../img/logo.png" alt="Logo" class="logo" />
+        <h2>MathQuest</h2>
+      </div>
+
+      <div class="user-profile">
+        <div class="user-info">
+          <h3>Jules Apuya</h3>
+          <p>2022304579</p>
+        </div>
+      </div>
+
+      <nav class="menu">
+  <p class="menu-title">MAIN MENU</p>
+  <a href="Home.html" class="menu-item">🏠 Dashboard</a>
+  <a href="scores-user.html" class="menu-item">📊 My Scores</a>
+  <a href="leaderboard-user.html" class="menu-item active">🏆 Leaderboard</a>
+
+  <p class="menu-title">ACCOUNT</p>
+  <a href="settings-user.html" class="menu-item">⚙ Settings</a>
+</nav>
+    </div>  
+
+    <div class="logout-area">
+      <button class="logout-btn" onclick="window.location.href='../login and register/login.html'">
+      🚪 Log Out
+    </button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    <h1 class="page-title">🏆 Leaderboard</h1>
+    <p class="subtitle">See the top-performing students in MathQuest!</p>
+
+    <!-- Leaderboard Table -->
+    <div class="leaderboard-card">
+      <table class="leaderboard-table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Student Name</th>
+            <th>Score</th>
+            <th>Level</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="gold">
+            <td>🥇 1</td>
+            <td>Maria Santos</td>
+            <td>980</td>
+            <td>Legend</td>
+          </tr>
+          <tr class="silver">
+            <td>🥈 2</td>
+            <td>John Reyes</td>
+            <td>920</td>
+            <td>Master</td>
+          </tr>
+          <tr class="bronze">
+            <td>🥉 3</td>
+            <td>Anna Garcia</td>
+            <td>880</td>
+            <td>Pro</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>You</td>
+            <td>820</td>
+            <td>Advanced</td>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td>Kevin Cruz</td>
+            <td>790</td>
+            <td>Advanced</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+
+</div>
+
+</body>
+</html>
