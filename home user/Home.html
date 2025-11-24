@@ -4,11 +4,16 @@
   <meta charset="UTF-8" />
   <title>Student Dashboard – MathQuest</title>
 
-  <!-- CORRECT CSS PATH -->
+  <!-- Protect student/user route -->
+  <script type="module">
+    import { protectRoute } from "../DB/protect.js";
+    protectRoute("user"); 
+  </script>
+
   <link rel="stylesheet" href="../css/style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-
 </head>
+
 <body class="dashboard-bg">
 
 <div class="dashboard-wrapper">
@@ -16,86 +21,113 @@
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <div>
+
+      <!-- LOGO -->
       <div class="logo-area">
-        <!-- CORRECT IMAGE PATH -->
         <img src="../img/logo.png" alt="Logo" class="logo" />
         <h2>MathQuest</h2>
       </div>
 
+      <!-- DYNAMIC USER PROFILE -->
       <div class="user-profile">
-        <div class="user-info">
-          <h3>Jules Apuya</h3>
-          <p>2022304579</p>
+        <div class="profile-avatar">U</div>
+        <div class="profile-info">
+          <h4>User Name</h4>
+          <small>User</small>
         </div>
       </div>
 
-     <nav class="menu">
-  <p class="menu-title">MAIN MENU</p>
+      <!-- MENU -->
+      <nav class="menu">
+        <p class="menu-title">MAIN MENU</p>
 
-  <!-- Dashboard -->
-  <a href="Home.html" class="menu-item active">🏠 Dashboard</a>
+        <a href="Home.html" class="menu-item active">🏠 Dashboard</a>
+        <a href="scores-user.html" class="menu-item">📊 My Scores</a>
+        <a href="leaderboard-user.html" class="menu-item">🏆 Leaderboard</a>
 
-  <!-- Go to scores -->
-  <a href="scores-user.html" class="menu-item">📊 My Scores</a>
-
-  <!-- Go to leaderboard -->
-  <a href="leaderboard-user.html" class="menu-item">🏆 Leaderboard</a>
-
-  <p class="menu-title">ACCOUNT</p>
-
-  <!-- Go to settings -->
-  <a href="settings-user.html" class="menu-item">⚙ Settings</a>
-</nav>
-
+        <p class="menu-title">ACCOUNT</p>
+        <a href="settings-user.html" class="menu-item">⚙ Settings</a>
+      </nav>
     </div>
 
+    <!-- LOGOUT -->
     <button class="logout-btn" onclick="window.location.href='../login and register/login.html'">
       🚪 Log Out
     </button>
+
   </aside>
 
- <!-- MAIN CONTENT -->
-<main class="main-content">
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
 
-  <!-- TOP SECTION (Welcome + Summary Stats) -->
-  <section class="top-section">
-    <div class="welcome-text">
-      <h1>Welcome back, <span>Jules!</span> 👋</h1>
-      <p>Here’s your latest progress</p>
-    </div>
+    <!-- TOP SECTION -->
+    <section class="top-section">
+      <div class="welcome-text">
+        <h1>Welcome back, <span class="welcome-name">Student</span> 👋</h1>
+        <p>Here’s your latest progress</p>
+      </div>
+    </section>
 
-  
-  </section>
+    <!-- DASHBOARD CARDS -->
+    <section class="cards-grid">
+      <div class="card">
+        <div class="icon">📈</div>
+        <h3>85%</h3>
+        <p>Latest Score</p>
+        <small>Great job on Week 3!</small>
+      </div>
 
-  <!-- DASHBOARD CARDS BELOW -->
-  <section class="cards-grid">
-    <div class="card">
-      <div class="icon">📈</div>
-      <h3>85%</h3>
-      <p>Latest Score</p>
-      <small>Great job on Week 3!</small>
-    </div>
+      <div class="card">
+        <div class="icon">🏆</div>
+        <h3>#4</h3>
+        <p>Highest Rank</p>
+        <small>Leaderboard Position</small>
+      </div>
 
-    <div class="card">
-      <div class="icon">🏆</div>
-      <h3>#4</h3>
-      <p>Highest Rank</p>
-      <small>Leaderboard Position</small>
-    </div>
+      <div class="card">
+        <div class="icon">📆</div>
+        <h3>3</h3>
+        <p>Weeks Completed</p>
+        <small>🔥 Keep going!</small>
+      </div>
 
-    <div class="card">
-      <div class="icon">📆</div>
-      <h3>3</h3>
-      <p>Weeks Completed</p>
-      <small>🔥 Keep going!</small>
-    </div>
+      <div class="card">
+        <div class="icon">⭐</div>
+        <h3>92%</h3>
+        <p>Best Score</p>
+        <small>Personal Record</small>
+      </div>
+    </section>
 
-    <div class="card">
-      <div class="icon">⭐</div>
-      <h3>92%</h3>
-      <p>Best Score</p>
-      <small>Personal Record</small>
-    </div>
-  </section>
+  </main>
+</div>
 
-</main>
+<!-- DYNAMIC PROFILE + WELCOME NAME SCRIPT -->
+<script type="module">
+  import { loadUserProfile } from "../DB/loadUserProfile.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+  import { app } from "../DB/firebase.js";
+
+  loadUserProfile(); // load sidebar user info
+
+  // ---- LOAD WELCOME MESSAGE NAME ----
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const welcomeName = document.querySelector(".welcome-name");
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) return;
+
+    const snap = await getDoc(doc(db, "users", user.uid));
+    if (!snap.exists()) return;
+
+    const data = snap.data();
+
+    // Use only first name
+    welcomeName.textContent = data.username.split(" ")[0];
+  });
+</script>
+
+</body>
+</html>

@@ -3,6 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <title>Admin Dashboard – MathQuest</title>
+
+  <script type="module">
+  import { protectRoute } from "../DB/protect.js";
+  protectRoute("admin");
+  </script>
+
   <link rel="stylesheet" href="../css/style.css" />
 </head>
 
@@ -88,21 +94,40 @@
 
 <!-- ================== FIREBASE LOGOUT ================== -->
 <script type="module">
-  import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-  import { app } from "../DB/firebase.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+import { app } from "../DB/firebase.js";
 
-  const auth = getAuth(app);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-  document.getElementById("logoutBtn").addEventListener("click", async () => {
-    try {
-      await signOut(auth);
-      alert("Logged out successfully!");
-      window.location.href = "../landing/index.html";
-    } catch (error) {
-      console.error("Logout failed:", error);
-      alert("Error logging out. Try again.");
-    }
-  });
+// DOM Elements (your static HTML IDs/classes)
+const profileNameEl = document.querySelector(".profile-info h4");
+const profileRoleEl = document.querySelector(".profile-info small");
+const profileAvatarEl = document.querySelector(".profile-avatar");
+
+// Listen for logged-in user
+onAuthStateChanged(auth, async (user) => {
+  if (!user) return;
+
+  const userDoc = await getDoc(doc(db, "users", user.uid));
+  if (!userDoc.exists()) return;
+
+  const data = userDoc.data();
+
+  // Update UI with Firestore data
+  profileNameEl.textContent = data.username;
+  profileRoleEl.textContent = data.role[0].toUpperCase() + data.role.slice(1);
+
+  // Avatar initials
+  const initials = data.username
+    .split(" ")
+    .map(word => word[0].toUpperCase())
+    .join("")
+    .slice(0, 2);
+
+  profileAvatarEl.textContent = initials;
+});
 </script>
 
 </body>

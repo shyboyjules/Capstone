@@ -11,7 +11,7 @@ export function protectRoute(requiredRole) {
     onAuthStateChanged(auth, async (user) => {
         if (!user) {
             // ❌ Not logged in → Go back to login
-            window.location.href = "../login and register/login.html";
+            window.location.href = "../landing/index.html";
             return;
         }
 
@@ -21,7 +21,7 @@ export function protectRoute(requiredRole) {
 
         if (!userDoc.exists()) {
             auth.signOut();
-            window.location.href = "../login and register/login.html";
+            window.location.href = "../landing/index.html";
             return;
         }
 
@@ -32,7 +32,7 @@ export function protectRoute(requiredRole) {
         // ❌ If wrong role → force out
         if (role !== requiredRole) {
             alert("Access denied. You are not authorized to view this page.");
-            window.location.href = "../login and register/login.html";
+            window.location.href = "../landing/index.html";
         }
     });
 }

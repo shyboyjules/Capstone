@@ -3,6 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <title>Teacher – Students</title>
+    
+  <script type="module">
+  import { protectRoute } from "../DB/protect.js";
+  protectRoute("teacher");
+  </script>
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="../css/style.css">
 </head>
@@ -18,10 +24,12 @@
         <h2>MathQuest</h2>
       </div>
 
+      <!-- DYNAMIC USER INFO -->
       <div class="user-profile">
-        <div class="user-info">
-          <h3>Teacher</h3>
-          <p>Faculty</p>
+        <div class="profile-avatar">T</div>
+        <div class="profile-info">
+          <h4>Teacher Name</h4>
+          <small>Teacher</small>
         </div>
       </div>
 
@@ -96,6 +104,10 @@
 </div>
 
 <!-- JAVASCRIPT – SEARCH FUNCTION -->
+ <script type="module">
+  import { loadUserProfile } from "../DB/loadUserProfile.js";
+  loadUserProfile();
+</script>
 <script>
   const searchInput = document.getElementById('searchInput');
   const tableRows = document.querySelectorAll('#studentTableBody tr');

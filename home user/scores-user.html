@@ -3,6 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <title>My Scores – MathQuest</title>
+  
+  <script type="module">
+  import { protectRoute } from "../DB/protect.js";
+  protectRoute("teacher");
+  </script>
+
   <link rel="stylesheet" href="../css/style.css" />
 </head>
 <body class="dashboard-bg">
@@ -17,10 +23,12 @@
         <h2>MathQuest</h2>
       </div>
 
+      <!-- DYNAMIC USER PROFILE -->
       <div class="user-profile">
-        <div class="user-info">
-          <h3>Jules Apuya</h3>
-          <p>2022304579</p>
+        <div class="profile-avatar">U</div>
+        <div class="profile-info">
+          <h4>User Name</h4>
+          <small>User</small>
         </div>
       </div>
 
@@ -88,6 +96,10 @@
   </main>
 
 </div>
+<script type="module">
+  import { loadUserProfile } from "../DB/loadUserProfile.js";
+  loadUserProfile();
+</script>
 
 </body>
 </html>
