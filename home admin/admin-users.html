@@ -4,9 +4,10 @@
   <meta charset="UTF-8" />
   <title>Admin – Manage Users</title>
 
+  <!-- PROTECT ADMIN ROUTE -->
   <script type="module">
-  import { protectRoute } from "../DB/protect.js";
-  protectRoute("admin");
+    import { protectRoute } from "../DB/protect.js";
+    protectRoute("admin");
   </script>
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -62,41 +63,7 @@
             <th style="text-align:center">Actions</th>
           </tr>
         </thead>
-        <tbody>
-          <tr>
-            <td>Sarah Johnson</td>
-            <td>Teacher</td>
-            <td>sarah@school.com</td>
-            <td class="status-completed">Active</td>
-            <td style="text-align:center">
-              <button class="btn-action">View</button>
-              <button class="btn-warning">Edit</button>
-              <button class="btn-danger">Delete</button>
-            </td>
-          </tr>
-          <tr>
-            <td>John Reyes</td>
-            <td>Student</td>
-            <td>john@student.com</td>
-            <td class="status-pending">Inactive</td>
-            <td style="text-align:center">
-              <button class="btn-action">View</button>
-              <button class="btn-warning">Edit</button>
-              <button class="btn-danger">Delete</button>
-            </td>
-          </tr>
-          <tr>
-            <td>Maria Santos</td>
-            <td>Student</td>
-            <td>maria@student.com</td>
-            <td class="status-completed">Active</td>
-            <td style="text-align:center">
-              <button class="btn-action">View</button>
-              <button class="btn-warning">Edit</button>
-              <button class="btn-danger">Delete</button>
-            </td>
-          </tr>
-        </tbody>
+        <tbody></tbody>
       </table>
     </div>
 
@@ -105,24 +72,105 @@
 
 <!-- JS FOR SEARCH FILTER -->
 <script>
-  function filterUsers() {
-    const input = document.getElementById("searchInput").value.toLowerCase();
-    const table = document.getElementById("userTable");
-    const rows = table.getElementsByTagName("tr");
+function filterUsers() {
+  const input = document.getElementById("searchInput").value.toLowerCase();
+  const table = document.getElementById("userTable");
+  const rows = table.getElementsByTagName("tr");
 
-    for (let i = 1; i < rows.length; i++) {
-      let cells = rows[i].getElementsByTagName("td");
-      let match = false;
+  for (let i = 1; i < rows.length; i++) {
+    let cells = rows[i].getElementsByTagName("td");
+    let match = false;
 
-      for (let j = 0; j < cells.length - 1; j++) {
-        if (cells[j].textContent.toLowerCase().includes(input)) {
-          match = true;
-          break;
-        }
+    for (let j = 0; j < cells.length - 1; j++) {
+      if (cells[j].textContent.toLowerCase().includes(input)) {
+        match = true;
+        break;
       }
-      rows[i].style.display = match ? "" : "none";
+    }
+    rows[i].style.display = match ? "" : "none";
+  }
+}
+</script>
+
+<!-- LOAD USERS AND EDIT ROLE -->
+<script type="module">
+import { app } from "../DB/firebase.js";
+import { getFirestore, collection, getDocs, doc, updateDoc } 
+  from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+const db = getFirestore(app);
+const tableBody = document.querySelector("#userTable tbody");
+
+
+async function loadUsers() {
+  const usersCollection = collection(db, "users");
+  const snapshot = await getDocs(usersCollection);
+
+  tableBody.innerHTML = "";
+
+  snapshot.forEach((docItem) => {
+    const user = docItem.data();
+    const isActive = true;
+
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${user.username}</td>
+      <td>${user.role}</td>
+      <td>${user.email}</td>
+      <td class="${isActive ? "status-completed" : "status-pending"}">
+        ${isActive ? "Active" : "Inactive"}
+      </td>
+      <td style="text-align:center">
+        <button class="btn-warning" data-id="${docItem.id}">Edit</button>
+        <button class="btn-danger" data-id="${docItem.id}">Delete</button>
+      </td>
+    `;
+    tableBody.appendChild(row);
+  });
+
+  console.log("✅ User list loaded.");
+}
+
+// Edit user role (only 'user' or 'teacher')
+tableBody.addEventListener("click", async (e) => {
+  if (e.target.classList.contains("btn-warning")) {
+    const userId = e.target.getAttribute("data-id");
+    const currentRole = e.target.parentElement.parentElement.children[1].textContent;
+
+    const newRole = promptRole(currentRole);
+    if (!newRole || newRole === currentRole) return;
+
+    try {
+      const userRef = doc(db, "users", userId);
+      await updateDoc(userRef, { role: newRole });
+
+     
+      e.target.parentElement.parentElement.children[1].textContent = newRole;
+      alert("✅ User role updated successfully!");
+    } catch (err) {
+      console.error("Error updating user role:", err);
+      alert("❌ Failed to update role.");
     }
   }
+});
+
+
+function promptRole(currentRole) {
+  const roles = ["user", "teacher"];
+  let selection = prompt(
+    `Edit role for this user (type number):\n1. user\n2. teacher\n(Current role: ${currentRole})`,
+    roles.indexOf(currentRole) + 1
+  );
+  if (!selection) return null;
+
+  const index = parseInt(selection) - 1;
+  if (index < 0 || index >= roles.length) return null;
+
+  return roles[index];
+}
+
+
+document.addEventListener("DOMContentLoaded", loadUsers);
 </script>
 
 </body>
