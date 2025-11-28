@@ -42,6 +42,7 @@ export async function registerUser(email, password, username, role = "user") {
       email: email,
       role: role, // ⚠️ DO NOT hard-code this
       createdAt: new Date().toISOString()
+      
     });
 
     console.log(`✅ ${role} account created & saved in Firestore:`, user.uid);

@@ -6,7 +6,7 @@
 
   <!-- Protect student/user route -->
   <script type="module">
-    import { protectRoute } from "../DB/protect.js";
+    import { protectRoute } from "../DB/Protect.js";
     protectRoute("user"); 
   </script>
 
@@ -70,14 +70,14 @@
 
     <!-- DASHBOARD CARDS -->
     <section class="cards-grid">
-      <div class="card">
+      <div class="card" style="cursor: pointer;"onclick="window.location.href='scores-user.html'">
         <div class="icon">📈</div>
         <h3>85%</h3>
         <p>Latest Score</p>
         <small>Great job on Week 3!</small>
       </div>
 
-      <div class="card">
+      <div class="card" style="cursor: pointer;"onclick="window.location.href='leaderboard-user.html'">
         <div class="icon">🏆</div>
         <h3>#4</h3>
         <p>Highest Rank</p>

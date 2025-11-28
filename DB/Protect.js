@@ -25,9 +25,9 @@ export function protectRoute(requiredRole) {
             return;
         }
 
-        const role = userDoc.data().role;
+        const role = userDoc.data()?.role?.trim();
 
-        console.log(`🔐 Current role: ${role} | Required: ${requiredRole}`);
+        console.log(`🔐 Current role from Firestore: '${role}' | Required: '${requiredRole}'`);
 
         // ❌ If wrong role → force out
         if (role !== requiredRole) {
