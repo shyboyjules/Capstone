@@ -10,10 +10,6 @@
     protectRoute("admin");
   </script>
   
-  
-
-
-  
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="../css/style.css" />
 </head>
@@ -99,43 +95,52 @@ function filterUsers() {
 <!-- LOAD USERS AND EDIT ROLE -->
 <script type="module">
 import { app } from "../DB/firebase.js";
-import { getFirestore, collection, getDocs, doc, updateDoc } 
-  from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
-const db = getFirestore(app);
+// ===== CHANGED: Import Realtime Database instead of Firestore
+import { getDatabase, ref, get, child, update } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-database.js";
+import { logoutUser } from "../DB/auth.js";
+
+const db = getDatabase(app);
 const tableBody = document.querySelector("#userTable tbody");
 
-
+// =====================
+// LOAD USERS
+// =====================
 async function loadUsers() {
-  const usersCollection = collection(db, "users");
-  const snapshot = await getDocs(usersCollection);
+  // ===== CHANGED: Realtime DB ref and get() instead of Firestore collection/getDocs
+  const usersRef = ref(db, "users");
+  const snapshot = await get(usersRef);
 
   tableBody.innerHTML = "";
 
-  snapshot.forEach((docItem) => {
-    const user = docItem.data();
-    const isActive = true;
+  if (snapshot.exists()) {
+    const usersData = snapshot.val();
+    Object.entries(usersData).forEach(([userId, user]) => {
+      const isActive = true;
 
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${user.username}</td>
-      <td>${user.role}</td>
-      <td>${user.email}</td>
-      <td class="${isActive ? "status-completed" : "status-pending"}">
-        ${isActive ? "Active" : "Inactive"}
-      </td>
-      <td style="text-align:center">
-        <button class="btn-warning" data-id="${docItem.id}">Edit</button>
-        <button class="btn-danger" data-id="${docItem.id}">Delete</button>
-      </td>
-    `;
-    tableBody.appendChild(row);
-  });
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${user.username}</td>
+        <td>${user.role}</td>
+        <td>${user.email}</td>
+        <td class="${isActive ? "status-completed" : "status-pending"}">
+          ${isActive ? "Active" : "Inactive"}
+        </td>
+        <td style="text-align:center">
+          <button class="btn-warning" data-id="${userId}">Edit</button>
+          <button class="btn-danger" data-id="${userId}">Delete</button>
+        </td>
+      `;
+      tableBody.appendChild(row);
+    });
+  }
 
   console.log("✅ User list loaded.");
 }
 
-// Edit user role (only 'user' or 'teacher')
+// =====================
+// EDIT USER ROLE
+// =====================
 tableBody.addEventListener("click", async (e) => {
   if (e.target.classList.contains("btn-warning")) {
     const userId = e.target.getAttribute("data-id");
@@ -145,10 +150,11 @@ tableBody.addEventListener("click", async (e) => {
     if (!newRole || newRole === currentRole) return;
 
     try {
-      const userRef = doc(db, "users", userId);
-      await updateDoc(userRef, { role: newRole });
+      // ===== CHANGED: Realtime DB update() instead of Firestore updateDoc()
+      const userRef = ref(db, "users/" + userId);
+      await update(userRef, { role: newRole });
 
-     
+      // Update table display
       e.target.parentElement.parentElement.children[1].textContent = newRole;
       alert("✅ User role updated successfully!");
     } catch (err) {
@@ -158,7 +164,9 @@ tableBody.addEventListener("click", async (e) => {
   }
 });
 
-
+// =====================
+// PROMPT ROLE SELECTION
+// =====================
 function promptRole(currentRole) {
   const roles = ["user", "teacher"];
   let selection = prompt(
@@ -173,8 +181,12 @@ function promptRole(currentRole) {
   return roles[index];
 }
 
-
+// =====================
+// INITIALIZE
+// =====================
 document.addEventListener("DOMContentLoaded", loadUsers);
+// wire logout button
+document.getElementById("logoutBtn").addEventListener("click", logoutUser);
 </script>
 
 </body>

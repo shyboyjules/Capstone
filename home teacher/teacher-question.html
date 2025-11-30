@@ -1,139 +1,147 @@
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-    <meta charset="UTF-8">
-    <title>Add Questions – MathQuest</title>
-    <link rel="stylesheet" href="../css/style.css">
-    </head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Add Questions – MathQuest</title>
 
-    <body class="dashboard-bg">
-    <div class="dashboard-wrapper">
-
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-        <div>
-        <div class="logo-area">
-            <img src="../img/logo.png" alt="Logo" class="logo" />
-            <h2>MathQuest</h2>
-        </div>
-
-        <div class="user-profile">
-            <div class="profile-avatar">T</div>
-            <div class="profile-info">
-            <h4>Teacher Name</h4>
-            <small>Teacher</small>
-            </div>
-        </div>
-
-        <nav class="menu">
-            <p class="menu-title">MAIN MENU</p>
-            <a href="home_teacher.html" class="menu-item">🏠 Dashboard</a>
-            <a href="teacher-question.html" class="menu-item active">📝 Add Questions</a>
-            <a href="teacher-students.html" class="menu-item">👩‍🏫 View Students</a>
-            <a href="teacher-reports.html" class="menu-item">📊 Reports</a>
-
-            <p class="menu-title">ACCOUNT</p>
-            <a href="teacher-settings.html" class="menu-item">⚙ Settings</a>
-        </nav>
-        </div>
-
-        <div class="logout-area">
-        <button class="logout-btn" onclick="window.location.href='../login and register/login.html'">🚪 Logout</button>
-        </div>
-    </aside>
-
-    <!-- MAIN CONTENT -->
-    <main class="main-content">
-
-        <h1 class="page-title">📝 Add Questions</h1>
-        <p class="subtitle">Create quiz items for students</p>
-
-        <!-- FORM AREA -->
-        <div class="question-form">
-        <label class="input-label">🧠 Question</label>
-        <textarea id="questionInput" class="input-box" rows="2" placeholder="Enter question here..."></textarea>
-
-        <label class="input-label">📌 Choices (separate with comma):</label>
-        <input id="choicesInput" class="input-box" placeholder="Ex: 10, 20, 30, 40">
-
-        <label class="input-label">✔ Correct Answer</label>
-        <input id="answerInput" class="input-box" placeholder="Enter correct answer">
-
-        <!-- BUTTONS -->
-        <div class="button-group">
-            <button class="btn-primary" id="addQuestionBtn">➕ Add Question</button>
-            <button class="btn-secondary" id="clearFormBtn">🧹 Clear</button>
-        </div>
-        </div>
-
-        <!-- QUESTION LIST -->
-        <div class="questions-list">
-        <h3>📋 List of Questions</h3>
-
-        <div class="table-container">
-            <table class="scores-table">
-            <thead>
-                <tr>
-                <th>#</th>
-                <th>Question</th>
-                <th>Choices</th>
-                <th>Correct Answer</th>
-                </tr>
-            </thead>
-            <tbody id="questionTable"></tbody>
-            </table>
-        </div>
-        </div>
-
-    </main>
-    </div>
-
-    <!-- JS SCRIPT -->
-    <script>
-    let count = 1;
-
-    document.getElementById("addQuestionBtn").addEventListener("click", function () {
-        const q = document.getElementById("questionInput").value.trim();
-        const c = document.getElementById("choicesInput").value.trim();
-        const a = document.getElementById("answerInput").value.trim();
-
-        if (!q || !c || !a) {
-        alert("⚠ Please fill all fields!");
-        return;
-        }
-
-        const table = document.getElementById("questionTable");
-        const row = document.createElement("tr");
-        row.innerHTML = `
-        <td>${count++}</td>
-        <td>${q}</td>
-        <td>${c}</td>
-        <td><b>${a}</b></td>
-        `;
-        table.appendChild(row);
-
-        document.getElementById("questionInput").value = "";
-        document.getElementById("choicesInput").value = "";
-        document.getElementById("answerInput").value = "";
-    });
-
-    document.getElementById("clearFormBtn").addEventListener("click", function () {
-        document.getElementById("questionInput").value = "";
-        document.getElementById("choicesInput").value = "";
-        document.getElementById("answerInput").value = "";
-    });
-    </script>
-<script>
-  const currentPage = window.location.pathname.split("/").pop();
-
-  document.querySelectorAll(".menu-item").forEach(link => {
-    if (link.getAttribute("href") === currentPage) {
-      link.classList.add("active");
-    } else {
-      link.classList.remove("active");
-    }
-  });
+<!-- ✅ Properly protect route -->
+<script type="module">
+  import { protectRoute } from "../DB/Protect.js";
+  protectRoute("teacher"); // Only teachers can access this page
 </script>
 
-    </body>
-    </html>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body class="dashboard-bg">
+<div class="dashboard-wrapper">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div>
+      <div class="logo-area">
+        <img src="../img/logo.png" alt="Logo" class="logo" />
+        <h2>MathQuest</h2>
+      </div>
+
+      <div class="user-profile" id="userProfileSidebar">
+        <div class="profile-avatar">T</div>
+        <div class="profile-info">
+          <h4>Teacher Name</h4>
+          <small>Teacher</small>
+        </div>
+      </div>
+
+      <nav class="menu">
+        <p class="menu-title">MAIN MENU</p>
+        <a href="home_teacher.html" class="menu-item">🏠 Dashboard</a>
+        <a href="teacher-question.html" class="menu-item active">📝 Add Questions</a>
+        <a href="teacher-students.html" class="menu-item">👩‍🏫 View Students</a>
+        <a href="teacher-reports.html" class="menu-item">📊 Reports</a>
+
+        <p class="menu-title">ACCOUNT</p>
+        <a href="teacher-settings.html" class="menu-item">⚙ Settings</a>
+      </nav>
+    </div>
+
+    <div class="logout-area">
+      <button class="logout-btn" id="logoutBtn">🚪 Logout</button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    <h1 class="page-title">📝 Add Questions</h1>
+    <p class="subtitle">Create quiz items for students</p>
+
+    <!-- FORM AREA -->
+    <div class="question-form">
+      <label class="input-label">🧠 Question</label>
+      <textarea id="questionInput" class="input-box" rows="2" placeholder="Enter question here..."></textarea>
+
+      <label class="input-label">📌 Choices (separate with comma):</label>
+      <input id="choicesInput" class="input-box" placeholder="Ex: 10, 20, 30, 40">
+
+      <label class="input-label">✔ Correct Answer</label>
+      <input id="answerInput" class="input-box" placeholder="Enter correct answer">
+
+      <div class="button-group">
+        <button class="btn-primary" id="addQuestionBtn">➕ Add Question</button>
+        <button class="btn-secondary" id="clearFormBtn">🧹 Clear</button>
+      </div>
+    </div>
+
+    <!-- QUESTION LIST -->
+    <div class="questions-list">
+      <h3>📋 List of Questions</h3>
+      <div class="table-container">
+        <table class="scores-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Question</th>
+              <th>Choices</th>
+              <th>Correct Answer</th>
+            </tr>
+          </thead>
+          <tbody id="questionTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ✅ Load user profile & logout -->
+<script type="module">
+  import { loadUserProfile } from "../DB/loadUserProfile.js";
+  import { logoutUser } from "../DB/auth.js";
+  loadUserProfile(); // Load teacher info in sidebar
+  document.getElementById("logoutBtn").addEventListener("click", logoutUser);
+</script>
+
+<script>
+let count = 1;
+
+// Add question
+document.getElementById("addQuestionBtn").addEventListener("click", function () {
+  const q = document.getElementById("questionInput").value.trim();
+  const c = document.getElementById("choicesInput").value.trim();
+  const a = document.getElementById("answerInput").value.trim();
+
+  if (!q || !c || !a) {
+    alert("⚠ Please fill all fields!");
+    return;
+  }
+
+  const table = document.getElementById("questionTable");
+  const row = document.createElement("tr");
+  row.innerHTML = `
+    <td>${count++}</td>
+    <td>${q}</td>
+    <td>${c}</td>
+    <td><b>${a}</b></td>
+  `;
+  table.appendChild(row);
+
+  document.getElementById("questionInput").value = "";
+  document.getElementById("choicesInput").value = "";
+  document.getElementById("answerInput").value = "";
+});
+
+// Clear form
+document.getElementById("clearFormBtn").addEventListener("click", function () {
+  document.getElementById("questionInput").value = "";
+  document.getElementById("choicesInput").value = "";
+  document.getElementById("answerInput").value = "";
+});
+
+// Highlight menu active page
+const currentPage = window.location.pathname.split("/").pop();
+document.querySelectorAll(".menu-item").forEach(link => {
+  link.classList.toggle("active", link.getAttribute("href") === currentPage);
+});
+</script>
+
+</body>
+</html>

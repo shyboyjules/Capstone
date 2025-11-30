@@ -93,11 +93,16 @@
 
 <script type="module">
 import { getAuth, EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+// ===== CHANGED: Import Realtime Database instead of Firestore
+import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-database.js";
+
 import { app } from "../DB/firebase.js";
 
 const auth = getAuth(app);
-const db = getFirestore(app);
+
+// ===== CHANGED: Initialize Realtime Database instead of Firestore
+const db = getDatabase(app);
 
 // =====================
 // ACCOUNT INFO SAVE
@@ -112,16 +117,19 @@ saveAccountBtn.addEventListener("click", async () => {
   const password = document.getElementById("passwordInput").value;
 
   try {
-    const userRef = doc(db, "users", user.uid);
-    let updateData = {};
+    // ===== CHANGED: Use Realtime Database ref instead of Firestore doc
+    const userRef = ref(db, "users/" + user.uid);
 
+    let updateData = {};
     if (displayName) updateData.username = displayName;
     if (email) updateData.email = email;
     if (password) updateData.password = password;
 
     if (Object.keys(updateData).length === 0) return alert("No changes to save.");
 
-    await updateDoc(userRef, updateData);
+    // ===== CHANGED: Use Realtime Database update() instead of updateDoc()
+    await update(userRef, updateData);
+
     alert("✅ Account information updated successfully!");
   } catch (err) {
     console.error(err);
@@ -137,7 +145,7 @@ saveSystemBtn.addEventListener("click", () => {
   const maintenanceMode = document.getElementById("maintenanceSelect").value;
   const backupOption = document.getElementById("backupSelect").value;
 
-  // Here you can store these settings to Firestore or localStorage
+  // Here you can store these settings to Realtime Database or localStorage if needed
   alert(`✅ System settings saved!\nMaintenance: ${maintenanceMode}\nBackup: ${backupOption}`);
 });
 
@@ -150,10 +158,14 @@ deleteBtn.addEventListener("click", async () => {
   const user = auth.currentUser;
   if (!user) return alert("❌ No logged-in user found.");
 
-  const userDoc = await getDoc(doc(db, "users", user.uid));
-  if (!userDoc.exists()) return alert("❌ User data not found.");
+  // ===== CHANGED: Use Realtime Database ref and get() instead of getDoc()
+  const userRef = ref(db, "users/" + user.uid);
+  const snapshot = await get(userRef);
 
-  const role = userDoc.data().role;
+  if (!snapshot.exists()) return alert("❌ User data not found.");
+
+  // ===== CHANGED: Access data via snapshot.val() instead of doc.data()
+  const role = snapshot.val().role;
 
   if (role !== "admin") {
     return alert("❌ Only Admins can delete this account.");
@@ -181,16 +193,9 @@ deleteBtn.addEventListener("click", async () => {
 // =====================
 // LOGOUT BUTTON
 // =====================
+import { logoutUser } from "../DB/auth.js";
 const logoutBtn = document.getElementById("logoutBtn");
-logoutBtn.addEventListener("click", async () => {
-  try {
-    await auth.signOut();
-    window.location.href = "../login.html";
-  } catch (err) {
-    console.error(err);
-    alert("❌ Logout failed.");
-  }
-});
+logoutBtn.addEventListener("click", logoutUser);
 </script>
 
 </body>

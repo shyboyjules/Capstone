@@ -1,44 +1,48 @@
+// DB/loadUserProfile.js
+
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
-import { app } from "./firebase.js";
+import { ref, get, child } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-database.js";
+import { app, db } from "./firebase.js";
 
 const auth = getAuth(app);
-const db = getFirestore(app);
 
-/**
- * Load user info into dashboard UI
- * elements must exist:
- *  - .profile-info h4
- *  - .profile-info small
- *  - .profile-avatar
- */
 export function loadUserProfile() {
   const nameEl = document.querySelector(".profile-info h4");
   const roleEl = document.querySelector(".profile-info small");
   const avatarEl = document.querySelector(".profile-avatar");
 
-  if (!nameEl || !roleEl || !avatarEl) {
-    console.warn("⚠ Missing profile HTML elements.");
-    return;
-  }
+  if (!nameEl || !roleEl || !avatarEl) return;
 
   onAuthStateChanged(auth, async (user) => {
     if (!user) return;
 
-    const snap = await getDoc(doc(db, "users", user.uid));
-    if (!snap.exists()) return;
+    const snapshot = await get(child(ref(db), "users/" + user.uid));
+    if (!snapshot.exists()) return;
 
-    const data = snap.data();
+    const data = snapshot.val();
 
-    nameEl.textContent = data.username;
-    roleEl.textContent = data.role[0].toUpperCase() + data.role.slice(1);
+    // --- NEW LOGIC ---
+    let displayName;
 
-    // Avatar initials
-    const initials = data.username
+    if (data.role === "user") {
+      // Use robloxId for users
+      displayName = data.robloxId || "No Roblox ID";
+    } else {
+      // Use username for teacher/admin
+      displayName = data.username;
+    }
+
+    nameEl.textContent = displayName;
+
+    roleEl.textContent = data.role.charAt(0).toUpperCase() + data.role.slice(1);
+
+    // Avatar initials based on displayName
+    const initials = displayName
+      .toString()
       .split(" ")
-      .map((w) => w[0].toUpperCase())
+      .map(x => x[0] ?? "")
       .join("")
-      .slice(0, 2);
+      .toUpperCase();
 
     avatarEl.textContent = initials;
   });

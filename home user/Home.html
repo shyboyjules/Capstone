@@ -51,9 +51,7 @@
     </div>
 
     <!-- LOGOUT -->
-    <button class="logout-btn" onclick="window.location.href='../login and register/login.html'">
-      🚪 Log Out
-    </button>
+    <button class="logout-btn" id="logoutBtn">🚪 Log Out</button>
 
   </aside>
 
@@ -102,32 +100,44 @@
   </main>
 </div>
 
+
 <!-- DYNAMIC PROFILE + WELCOME NAME SCRIPT -->
 <script type="module">
   import { loadUserProfile } from "../DB/loadUserProfile.js";
   import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
-  import { app } from "../DB/firebase.js";
+
+  /* Using Realtime DB ONLY */
+  import { ref, get, child } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-database.js";
+
+  import { app, db } from "../DB/firebase.js";
 
   loadUserProfile(); // load sidebar user info
 
-  // ---- LOAD WELCOME MESSAGE NAME ----
   const auth = getAuth(app);
-  const db = getFirestore(app);
   const welcomeName = document.querySelector(".welcome-name");
 
   onAuthStateChanged(auth, async (user) => {
     if (!user) return;
 
-    const snap = await getDoc(doc(db, "users", user.uid));
-    if (!snap.exists()) return;
+    const userRef = child(ref(db), "users/" + user.uid);
+    const snap = await get(userRef);
 
-    const data = snap.data();
+    if (!snap.exists()) {
+      console.error("❌ No user record found in Realtime DB!");
+      return;
+    }
 
-    // Use only first name
-    welcomeName.textContent = data.username.split(" ")[0];
+    const data = snap.val();
+
+    const displayName = data.username || data.robloxId || "Student";
+
+    /* Safe split */
+    const firstName = displayName.toString().split(" ")[0];
+
+    welcomeName.textContent = firstName;
   });
 </script>
+
 
 </body>
 </html>
