@@ -15,37 +15,32 @@ import {
   getDoc
 } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
-
-
 import { app } from "./firebase.js";
 
 const auth = getAuth(app);
 const db = getFirestore(app);
 
 //
-// ✅ Register user with a specific role
+// ✅ Register user with role + Roblox ID
 //
-export async function registerUser(email, password, username, role = "user") {
+export async function registerUser(email, password, username, role = "user", robloxId) {
   try {
-    // 👇 make sure role parameter is actually used
-    console.log(`🚀 Creating account with role: ${role}`);
-
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
     // Set display name in Firebase Auth
     await updateProfile(user, { displayName: username });
 
-    // ✅ Save user data in Firestore (correct role passed in)
+    // Save user data in Firestore
     await setDoc(doc(db, "users", user.uid), {
       username: username,
       email: email,
-      role: role, // ⚠️ DO NOT hard-code this
+      role: role,
+      robloxId: robloxId,   // ⭐ NEW FIELD SAVED
       createdAt: new Date().toISOString()
-      
     });
 
-    console.log(`✅ ${role} account created & saved in Firestore:`, user.uid);
+    console.log(`✅ User created with Roblox ID: ${robloxId}`);
     return user;
   } catch (error) {
     console.error("❌ Registration error:", error.message);
@@ -54,14 +49,13 @@ export async function registerUser(email, password, username, role = "user") {
 }
 
 //
-// ✅ Login user and redirect based on their Firestore role
+// Login (no changes needed)
 //
 export async function loginUser(email, password) {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
-    // 🔍 Fetch user role from Firestore
     const userDoc = await getDoc(doc(db, "users", user.uid));
     if (!userDoc.exists()) {
       throw new Error("User record not found in Firestore!");
@@ -70,7 +64,6 @@ export async function loginUser(email, password) {
     const userData = userDoc.data();
     console.log("✅ Logged in as:", userData.role);
 
-    // 🚀 Redirect to the correct dashboard folder
     switch (userData.role) {
       case "admin":
         window.location.href = "../home admin/home_admin.html";
@@ -82,7 +75,6 @@ export async function loginUser(email, password) {
         window.location.href = "../home user/Home.html";
         break;
       default:
-        // fallback if role missing
         alert("No role assigned. Redirecting to default home.");
         window.location.href = "../Home.html";
         break;
@@ -96,17 +88,7 @@ export async function loginUser(email, password) {
   }
 }
 
-//
-// ✅ Monitor authentication state (optional)
-//
 onAuthStateChanged(auth, (user) => {
-  if (user) {
-    console.log("🔐 Signed in:", user.email);
-  } else {
-    console.log("🚪 Signed out");
-  }
-
-  
+  if (user) console.log("🔐 Signed in:", user.email);
+  else console.log("🚪 Signed out");
 });
-
-
