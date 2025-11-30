@@ -1053,4 +1053,48 @@ button:hover {
   transition: all 0.2s ease-in-out;
 }
 
+/* QUESTION PAGE STYLING */
+.question-form {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  margin-bottom: 2rem;
+}
 
+.input-label {
+  font-weight: bold;
+  margin-top: 1rem;
+  display: block;
+}
+
+.input-box {
+  width: 100%;
+  padding: 0.8rem;
+  margin-top: 0.3rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.questions-list {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.scores-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.scores-table th, .scores-table td {
+  padding: 1rem;
+  border: 1px solid #eee;
+}
+
+.menu-item.active {
+  background: #4a5cf6 !important;
+  color: white !important;
+  font-weight: bold;
+}

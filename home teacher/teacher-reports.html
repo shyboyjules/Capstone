@@ -36,6 +36,7 @@
       <nav class="menu">
         <p class="menu-title">MAIN MENU</p>
         <a href="home_teacher.html" class="menu-item">🏠 Dashboard</a>
+        <a href="teacher-question.html" class="menu-item active">📝 Add Questions</a>
         <a href="teacher-students.html" class="menu-item">👩‍🏫 View Students</a>
         <a href="teacher-reports.html" class="menu-item active">📊 Reports</a>
        
@@ -156,6 +157,19 @@ document.getElementById("exportBtn").addEventListener("click", () => {
   alert("Exporting report... (can be connected to PHP/PDF)");
 });
 </script>
+
+<script>
+  const currentPage = window.location.pathname.split("/").pop();
+
+  document.querySelectorAll(".menu-item").forEach(link => {
+    if (link.getAttribute("href") === currentPage) {
+      link.classList.add("active");
+    } else {
+      link.classList.remove("active");
+    }
+  });
+</script>
+
 
 </body>
 </html>

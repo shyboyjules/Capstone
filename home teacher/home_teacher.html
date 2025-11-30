@@ -35,7 +35,8 @@
 
       <nav class="menu">
         <p class="menu-title">MAIN MENU</p>
-        <a href="teacher-dashboard.html" class="menu-item active">🏠 Dashboard</a>
+        <a href="home_teacher.html" class="menu-item active">🏠 Dashboard</a>
+        <a href="teacher-question.html" class="menu-item active">📝 Add Questions</a>
         <a href="teacher-students.html" class="menu-item">👩‍🏫 View Students</a>
         <a href="teacher-reports.html" class="menu-item">📊 Reports</a>
         
@@ -90,5 +91,18 @@
   import { loadUserProfile } from "../DB/loadUserProfile.js";
   loadUserProfile();
 </script>
+
+<script>
+  const currentPage = window.location.pathname.split("/").pop();
+
+  document.querySelectorAll(".menu-item").forEach(link => {
+    if (link.getAttribute("href") === currentPage) {
+      link.classList.add("active");
+    } else {
+      link.classList.remove("active");
+    }
+  });
+</script>
+
 </body>
 </html>
