@@ -1,99 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Send Feedback</title>
-    <link rel="stylesheet" href="../css/feedback.css"> <!-- Your CSS file -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Send Feedback</title>
+  <link rel="stylesheet" href="../../css/feedback.css">
 </head>
-
 <body>
 
-    <div class="feedback-container">
+  <!-- Back Button -->
+  <a href="../home user/Home.html" class="back-btn">🏠 Dashboard</a>
 
-        <!-- BACK BUTTON -->
-        <button class="back-btn" onclick="location.href='Home.html'">← Back</button>
+  <div class="feedback-container">
+    <h2>Send Feedback</h2>
+    <form id="feedbackForm">
+      <textarea id="feedbackInput" placeholder="Write your feedback here..." required></textarea>
+      <button type="submit" class="send-btn">Send Feedback</button>
+      <p id="statusMessage" style="text-align:center; margin-top:10px;"></p>
+    </form>
+  </div>
 
-        <h2>Send Feedback</h2>
+  <script type="module">
+    import { getDatabase, ref, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-database.js";
+    import { app } from '../../DB/firebase.js';
 
-        <!-- INPUT -->
-        <textarea id="feedbackInput" placeholder="Enter your feedback..."></textarea>
+    const db = getDatabase(app);
+    const feedbackForm = document.getElementById("feedbackForm");
+    const feedbackInput = document.getElementById("feedbackInput");
+    const statusMessage = document.getElementById("statusMessage");
 
-        <!-- SEND BUTTON -->
-        <button id="sendBtn" class="send-btn">Send</button>
+    feedbackForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-        <h3>Your Submitted Feedback</h3>
+      const feedbackText = feedbackInput.value.trim();
+      if (!feedbackText) {
+        statusMessage.textContent = "Please enter feedback before sending.";
+        statusMessage.style.color = "red";
+        return;
+      }
 
-        <!-- FEEDBACK LIST -->
-        <div id="feedbackList"></div>
-
-    </div>
-
-    <!-- FIREBASE + JS LOGIC -->
-    <script type="module">
-        import { db } from "./firebase.js";
-        import { 
-            ref, 
-            push, 
-            set, 
-            onValue 
-        } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
-        // ============================
-        // ELEMENTS
-        // ============================
-        const feedbackInput = document.getElementById("feedbackInput");
-        const sendBtn = document.getElementById("sendBtn");
-        const feedbackList = document.getElementById("feedbackList");
-
-        // ============================
-        // SEND FEEDBACK
-        // ============================
-        sendBtn.addEventListener("click", () => {
-            const text = feedbackInput.value.trim();
-
-            if (text === "") {
-                alert("Please enter feedback first.");
-                return;
-            }
-
-            const feedbackRef = ref(db, "feedbacks/");
-            const newFeedback = push(feedbackRef);
-
-            set(newFeedback, {
-                message: text,
-                timestamp: Date.now()
-            }).then(() => {
-                feedbackInput.value = "";
-                alert("Feedback Sent!");
-            });
+      try {
+        await push(ref(db, 'feedbacks'), {
+          feedback: feedbackText,
+          timestamp: serverTimestamp()
         });
 
-        // ============================
-        // LOAD FEEDBACKS (AUTO UPDATES)
-        // ============================
-        function loadFeedbacks() {
-            const feedbackRef = ref(db, "feedbacks/");
+        statusMessage.textContent = "Feedback sent successfully!";
+        statusMessage.style.color = "lightgreen";
+        feedbackInput.value = "";
 
-            onValue(feedbackRef, (snapshot) => {
-                feedbackList.innerHTML = "";
-
-                snapshot.forEach((child) => {
-                    const item = child.val();
-
-                    const box = document.createElement("div");
-                    box.className = "feedback-item";
-                    box.innerHTML = `
-                        <p>${item.message}</p>
-                        <small>${new Date(item.timestamp).toLocaleString()}</small>
-                    `;
-
-                    feedbackList.appendChild(box);
-                });
-            });
-        }
-
-        loadFeedbacks();
-    </script>
+      } catch (error) {
+        statusMessage.textContent = "Error sending feedback: " + error.message;
+        statusMessage.style.color = "red";
+      }
+    });
+  </script>
 
 </body>
 </html>
