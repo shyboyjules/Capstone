@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Send Feedback</title>
+    <link rel="stylesheet" href="../css/feedback.css"> <!-- Your CSS file -->
+</head>
+
+<body>
+
+    <div class="feedback-container">
+
+        <!-- BACK BUTTON -->
+        <button class="back-btn" onclick="location.href='Home.html'">← Back</button>
+
+        <h2>Send Feedback</h2>
+
+        <!-- INPUT -->
+        <textarea id="feedbackInput" placeholder="Enter your feedback..."></textarea>
+
+        <!-- SEND BUTTON -->
+        <button id="sendBtn" class="send-btn">Send</button>
+
+        <h3>Your Submitted Feedback</h3>
+
+        <!-- FEEDBACK LIST -->
+        <div id="feedbackList"></div>
+
+    </div>
+
+    <!-- FIREBASE + JS LOGIC -->
+    <script type="module">
+        import { db } from "./firebase.js";
+        import { 
+            ref, 
+            push, 
+            set, 
+            onValue 
+        } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+        // ============================
+        // ELEMENTS
+        // ============================
+        const feedbackInput = document.getElementById("feedbackInput");
+        const sendBtn = document.getElementById("sendBtn");
+        const feedbackList = document.getElementById("feedbackList");
+
+        // ============================
+        // SEND FEEDBACK
+        // ============================
+        sendBtn.addEventListener("click", () => {
+            const text = feedbackInput.value.trim();
+
+            if (text === "") {
+                alert("Please enter feedback first.");
+                return;
+            }
+
+            const feedbackRef = ref(db, "feedbacks/");
+            const newFeedback = push(feedbackRef);
+
+            set(newFeedback, {
+                message: text,
+                timestamp: Date.now()
+            }).then(() => {
+                feedbackInput.value = "";
+                alert("Feedback Sent!");
+            });
+        });
+
+        // ============================
+        // LOAD FEEDBACKS (AUTO UPDATES)
+        // ============================
+        function loadFeedbacks() {
+            const feedbackRef = ref(db, "feedbacks/");
+
+            onValue(feedbackRef, (snapshot) => {
+                feedbackList.innerHTML = "";
+
+                snapshot.forEach((child) => {
+                    const item = child.val();
+
+                    const box = document.createElement("div");
+                    box.className = "feedback-item";
+                    box.innerHTML = `
+                        <p>${item.message}</p>
+                        <small>${new Date(item.timestamp).toLocaleString()}</small>
+                    `;
+
+                    feedbackList.appendChild(box);
+                });
+            });
+        }
+
+        loadFeedbacks();
+    </script>
+
+</body>
+</html>

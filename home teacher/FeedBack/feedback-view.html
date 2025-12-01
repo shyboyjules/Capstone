@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>View Feedback</title>
+  <link rel="stylesheet" href="../../css/feedback.css">
+</head>
+<body>
+
+  <!-- Back to Dashboard -->
+  <a href="../home_teacher.html" class="back-btn">🏠 Dashboard</a>
+
+  <div class="form-container">
+    <h2>Student Feedback</h2>
+
+    <div class="feedback-container" id="feedbackList">
+      <!-- Feedback items will appear here -->
+    </div>
+  </div>
+
+  <script type="module">
+    import { db } from '../../DB/firebaseDB.js';
+    import { ref, onValue } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-database.js";
+
+    const feedbackList = document.getElementById("feedbackList");
+
+    // Reference to feedbacks in Realtime DB
+    const feedbackRef = ref(db, 'feedbacks');
+
+    // Listen for changes
+    onValue(feedbackRef, (snapshot) => {
+      feedbackList.innerHTML = ''; // clear existing feedbacks
+      const data = snapshot.val();
+
+      if (data) {
+        // Loop through all feedbacks
+        Object.keys(data).forEach((key) => {
+          const feedback = data[key];
+          const item = document.createElement('div');
+          item.classList.add('feedback-item');
+          item.innerHTML = `
+            <p>${feedback.feedback}</p>
+            <small>${feedback.timestamp ? new Date(feedback.timestamp).toLocaleString() : ''}</small>
+          `;
+          feedbackList.appendChild(item);
+        });
+      } else {
+        feedbackList.innerHTML = '<p>No feedback yet.</p>';
+      }
+    });
+  </script>
+
+</body>
+</html>
