@@ -374,3 +374,16 @@ body {
 		grid-template-columns: 1fr;
 	}
 }
+.card-link {
+  text-decoration: none;   /* remove underline */
+  color: inherit;          /* keep original text color */
+}
+
+.card-link .card {
+  cursor: pointer;         /* show pointer on hover */
+  transition: transform 0.2s;
+}
+
+.card-link .card:hover {
+  transform: scale(1.03);  /* small hover effect */
+}

@@ -62,7 +62,7 @@
       <label class="input-label">📌 Choices (separate with comma):</label>
       <input id="choicesInput" class="input-box" placeholder="Ex: 10, 20, 30, 40">
 
-      <label class="input-label">✔ Correct Answer</label>
+      <label class="input-label">✔ Correct Answer ('A','B','C','D')</label>
       <input id="answerInput" class="input-box" placeholder="Enter correct answer">
 
       <div class="button-group">
@@ -100,47 +100,152 @@
   document.getElementById("logoutBtn").addEventListener("click", logoutUser);
 </script>
 
-<script>
+<script type="module">
+import { saveQuestionToFirebase, loadQuestionsFromFirebase } from "../DB/saveQuestion.js";
+import { updateQuestionInFirebase, updateQuestionText, updateQuestionChoices, updateQuestionAnswer, deleteQuestionFromFirebase } from "../DB/editDeleteQuestion.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+import { app } from "../DB/firebase.js";
+
+const auth = getAuth(app);
 let count = 1;
+let questions = {}; // store all questions locally
 
-// Add question
-document.getElementById("addQuestionBtn").addEventListener("click", function () {
-  const q = document.getElementById("questionInput").value.trim();
-  const c = document.getElementById("choicesInput").value.trim();
-  const a = document.getElementById("answerInput").value.trim();
+const tableBody = document.getElementById("questionTable");
 
-  if (!q || !c || !a) {
-    alert("⚠ Please fill all fields!");
+// Load questions on page load
+async function loadQuestions() {
+    questions = await loadQuestionsFromFirebase();
+    tableBody.innerHTML = "";
+    count = 1;
+    for (const key of Object.keys(questions).sort((a,b) => parseInt(a.slice(1)) - parseInt(b.slice(1)))) {
+      const q = questions[key];
+      // Support legacy and current field names
+      const displayQuestion = q.question || q.text || '';
+      const choiceObj = q.choices || q.Choices || {};
+      const displayChoices = (typeof choiceObj === 'object' && !Array.isArray(choiceObj))
+        ? Object.keys(choiceObj).sort().map(k => `${k}: ${choiceObj[k]}`).join(", ")
+        : Array.isArray(choiceObj) ? choiceObj.join(', ') : (choiceObj || '');
+      const displayAnswer = q.CorrectAnswer || q.answer || '';
+      const row = document.createElement("tr");
+      row.id = key;
+      row.innerHTML = `
+        <td>${count++}</td>
+        <td>${displayQuestion}</td>
+        <td>${displayChoices}</td>
+        <td><b>${displayAnswer}</b></td>
+        <td>
+          <button class="edit-btn">✏️</button>
+          <button class="delete-btn">🗑️</button>
+        </td>
+      `;
+      tableBody.appendChild(row);
+
+      // Edit button
+      row.querySelector(".edit-btn").addEventListener("click", () => editQuestion(key));
+      // Delete button
+      row.querySelector(".delete-btn").addEventListener("click", () => removeQuestion(key));
+    }
+}
+
+// Add new question
+document.getElementById("addQuestionBtn").addEventListener("click", async () => {
+    const q = document.getElementById("questionInput").value.trim();
+    const c = document.getElementById("choicesInput").value.trim();
+    const a = document.getElementById("answerInput").value.trim();
+
+    if (!q || !c || !a) return alert("⚠ Please fill all fields!");
+
+    const choicesArray = c.split(",").map(choice => choice.trim());
+    const currentUser = auth.currentUser;
+    if (!currentUser) return alert("❌ No teacher logged in!");
+
+    const teacherId = currentUser.uid;
+    const key = await saveQuestionToFirebase(q, choicesArray, a, teacherId);
+
+    if (key) {
+        alert("✅ Question Saved!");
+        await loadQuestions(); // refresh table
+        document.getElementById("questionInput").value = "";
+        document.getElementById("choicesInput").value = "";
+        document.getElementById("answerInput").value = "";
+    } else {
+        alert("❌ Failed to save question.");
+    }
+});
+
+// Edit existing question — let teacher choose what to change
+async function editQuestion(key) {
+  const choice = prompt("What would you like to edit?\n1) Question text\n2) Choices\n3) Correct answer\n4) All fields\n(Enter 1,2,3 or 4)");
+  if (!choice) return;
+
+  // helper to read legacy/canonical fields
+  const getQuestionText = (k) => (questions[k].question || questions[k].text || '');
+  const getChoicesObj = (k) => (questions[k].choices || questions[k].Choices || {});
+  const getAnswer = (k) => (questions[k].CorrectAnswer || questions[k].answer || '');
+
+  if (choice === '1') {
+    const newQ = prompt("New question text:", getQuestionText(key));
+    if (!newQ) return;
+    const ok = await updateQuestionText(key, newQ);
+    if (ok) { alert("✅ Question text updated"); await loadQuestions(); }
     return;
   }
 
-  const table = document.getElementById("questionTable");
-  const row = document.createElement("tr");
-  row.innerHTML = `
-    <td>${count++}</td>
-    <td>${q}</td>
-    <td>${c}</td>
-    <td><b>${a}</b></td>
-  `;
-  table.appendChild(row);
+  if (choice === '2') {
+    // show existing choices as comma list
+    const existingObj = getChoicesObj(key);
+    const existingStr = typeof existingObj === 'object' && !Array.isArray(existingObj)
+      ? Object.keys(existingObj).sort().map(k => existingObj[k]).join(', ')
+      : Array.isArray(existingObj) ? existingObj.join(', ') : '';
 
-  document.getElementById("questionInput").value = "";
-  document.getElementById("choicesInput").value = "";
-  document.getElementById("answerInput").value = "";
-});
+    const newChoices = prompt("Enter choices (comma separated):", existingStr);
+    if (!newChoices) return;
+    const arr = newChoices.split(',').map(x => x.trim());
+    const ok = await updateQuestionChoices(key, arr);
+    if (ok) { alert("✅ Choices updated"); await loadQuestions(); }
+    return;
+  }
 
-// Clear form
-document.getElementById("clearFormBtn").addEventListener("click", function () {
-  document.getElementById("questionInput").value = "";
-  document.getElementById("choicesInput").value = "";
-  document.getElementById("answerInput").value = "";
-});
+  if (choice === '3') {
+    const newA = prompt("New correct answer:", getAnswer(key));
+    if (!newA) return;
+    const ok = await updateQuestionAnswer(key, newA);
+    if (ok) { alert("✅ Answer updated"); await loadQuestions(); }
+    return;
+  }
 
-// Highlight menu active page
-const currentPage = window.location.pathname.split("/").pop();
-document.querySelectorAll(".menu-item").forEach(link => {
-  link.classList.toggle("active", link.getAttribute("href") === currentPage);
-});
+  if (choice === '4') {
+    const newQ = prompt("New question text:", getQuestionText(key));
+    if (!newQ) return;
+    const existingObj = getChoicesObj(key);
+    const existingStr = typeof existingObj === 'object' && !Array.isArray(existingObj)
+      ? Object.keys(existingObj).sort().map(k => existingObj[k]).join(', ')
+      : Array.isArray(existingObj) ? existingObj.join(', ') : '';
+    const newChoices = prompt("Enter choices (comma separated):", existingStr);
+    if (!newChoices) return;
+    const newA = prompt("New correct answer:", getAnswer(key));
+    if (!newA) return;
+
+    const ok = await updateQuestionInFirebase(key, newQ, newChoices.split(',').map(x=>x.trim()), newA);
+    if (ok) { alert("✅ Question updated"); await loadQuestions(); }
+    return;
+  }
+
+  alert('Invalid choice');
+}
+
+// Delete question
+async function removeQuestion(key) {
+    if (!confirm("Are you sure you want to delete this question?")) return;
+    const success = await deleteQuestionFromFirebase(key);
+    if (success) {
+        alert("✅ Question Deleted!");
+        await loadQuestions();
+    }
+}
+
+// Initial load
+loadQuestions();
 </script>
 
 </body>
