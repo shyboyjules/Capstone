@@ -1098,3 +1098,18 @@ button:hover {
   color: white !important;
   font-weight: bold;
 }
+
+/* MAKE SIDEBAR FIXED WHILE SCROLLING */
+.sidebar {
+  position: fixed;          /* stays in place */
+  top: 0;
+  left: 0;
+  height: 100vh;            /* full height */
+  overflow-y: auto;         /* scrollbar only inside sidebar */
+  z-index: 1000;            /* always on top */
+}
+
+/* PUSH MAIN CONTENT TO THE RIGHT */
+.main-content {
+  margin-left: 260px;  /* same as sidebar width */
+}
