@@ -59,116 +59,170 @@
     <p class="subtitle">Generate progress reports & export them</p>
 
     <!-- FILTERS -->
-    <div class="report-filters">
-      <select id="filterGrade">
-        <option value="all">All Grades</option>
-        <option value="Grade 10">Grade 10</option>
-        <option value="Grade 9">Grade 9</option>
-        <option value="Grade 8">Grade 8</option>
-      </select>
-
-      <select id="filterStatus">
-        <option value="all">All Status</option>
-        <option value="PASS">PASS</option>
-        <option value="FAIL">FAIL</option>
-      </select>
-
-      <div>
-        <label>Start Date:</label>
-        <input type="date" id="startDate">
-      </div>
-
-      <div>
-        <label>End Date:</label>
-        <input type="date" id="endDate">
-      </div>
-
-      <button id="exportBtn" class="export-btn">📥 Export Report</button>
-    </div>
 
     <!-- REPORT TABLE -->
     <div class="report-table-wrapper">
       <table class="report-table">
         <thead>
           <tr>
-            <th>Student ID</th>
-            <th>Name</th>
+            <th>User ID</th>
+            <th>Student Name</th>
+            <th>Correct</th>
+            <th>Wrong</th>
             <th>Grade</th>
-            <th>Average Score</th>
             <th>Status</th>
           </tr>
         </thead>
         <tbody id="reportTableBody">
-          <tr data-grade="Grade 10" data-status="PASS">
-            <td>2022304579</td>
-            <td>Jules Apuya</td>
-            <td>Grade 10</td>
-            <td>95</td>
-            <td><span class="status-pass">PASS</span></td>
-          </tr>
-          <tr data-grade="Grade 10" data-status="FAIL">
-            <td>2022304001</td>
-            <td>Maria Santos</td>
-            <td>Grade 10</td>
-            <td>65</td>
-            <td><span class="status-fail">FAIL</span></td>
-          </tr>
-          <tr data-grade="Grade 9" data-status="PASS">
-            <td>2023304022</td>
-            <td>John Reyes</td>
-            <td>Grade 9</td>
-            <td>88</td>
-            <td><span class="status-pass">PASS</span></td>
-          </tr>
         </tbody>
       </table>
+
+      <!-- Status styles -->
+      <style>
+        .status-select {
+          padding: 6px 10px;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+          font-size: 14px;
+          cursor: pointer;
+        }
+        .status-select.completed {
+          background-color: #d4edda;
+          color: #155724;
+          border-color: #28a745;
+        }
+        .status-select.pending {
+          background-color: #fff3cd;
+          color: #856404;
+          border-color: #ffc107;
+        }
+        .status-select.none {
+          background-color: transparent;
+          color: #6c757d;
+          border-color: #ccc;
+        }
+      </style>
     </div>
 
   </main>
 </div>
 
-<!-- JAVASCRIPT: FILTERING AND EXPORT -->
 <script type="module">
   import { loadUserProfile } from "../DB/loadUserProfile.js";
   loadUserProfile();
 </script>
-<script>
-// FILTER TABLE DATA
-const gradeFilter = document.getElementById("filterGrade");
-const statusFilter = document.getElementById("filterStatus");
-const rows = document.querySelectorAll("#reportTableBody tr");
 
-function filterReports() {
-  const grade = gradeFilter.value;
-  const status = statusFilter.value;
+<script type="module">
+import { getDatabase, ref, get, child, onValue } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-database.js";
+import { app } from "../DB/firebase.js";
 
-  rows.forEach(row => {
-    const matchGrade = grade === "all" || row.dataset.grade === grade;
-    const matchStatus = status === "all" || row.dataset.status === status;
-    row.style.display = matchGrade && matchStatus ? "" : "none";
-  });
+const db = getDatabase(app);
+
+let usersCache = {};
+let statsCache = {};
+const userByStudentId = {};
+
+// Load all User IDs from "Students/Stats"
+async function loadStudentReports() {
+  const statsRef = ref(db, "Students/Stats");
+
+  try {
+    const snapshot = await get(statsRef);
+
+    if (!snapshot.exists()) {
+      console.log("No student stats found");
+      return;
+    }
+
+    const tableBody = document.getElementById("reportTableBody");
+    tableBody.innerHTML = ""; // Clear table
+
+    snapshot.forEach(childSnapshot => {
+      const userId = childSnapshot.key; 
+      const data = childSnapshot.val();
+
+      // read correct/wrong from known DB keys (support legacy names)
+      const correct = Number(data.CorrectAnswers ?? data.Correct ?? 0);
+      const wrong = Number(data.WrongAnswers ?? data.Wrong ?? 0);
+      const total = correct + wrong;
+      const gradePercent = total > 0 ? Math.round((correct / total) * 100) : 0;
+
+      // Get Student Name from userByStudentId lookup (built from users snapshot)
+      const user = userByStudentId[userId] || {};
+      const username = user.username || user.name || user.displayName || "Unknown";
+      
+      // Load status from localStorage (key: `student_status_${userId}`)
+      const savedStatus = localStorage.getItem(`student_status_${userId}`) || "None";
+
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${userId}</td>
+        <td>${username}</td>
+        <td>${correct}</td>
+        <td>${wrong}</td>
+        <td>${gradePercent}%</td>
+        <td>
+          <select class="status-select status-${savedStatus.toLowerCase()}" 
+                  id="status-${userId}" 
+                  data-userid="${userId}"
+                  onchange="updateStatus(this)">
+            <option value="Completed" ${savedStatus === 'Completed' ? 'selected' : ''}>Completed</option>
+            <option value="Pending" ${savedStatus === 'Pending' ? 'selected' : ''}>Pending</option>
+            <option value="None" ${savedStatus === 'None' ? 'selected' : ''}>None</option>
+          </select>
+        </td>
+      `;
+
+      tableBody.appendChild(row);
+    });
+
+  } catch (error) {
+    console.error("Error loading report list:", error);
+  }
 }
 
-gradeFilter.addEventListener("change", filterReports);
-statusFilter.addEventListener("change", filterReports);
+// LISTEN FOR REALTIME USER DATA (names) - builds userByStudentId map
+onValue(ref(db, "users"), (snapshot) => {
+  if (!snapshot.exists()) {
+    usersCache = {};
+    Object.keys(userByStudentId).forEach(k => delete userByStudentId[k]);
+    return;
+  }
+  const allUsers = snapshot.val();
+  usersCache = allUsers;
 
-// EXPORT (placeholder)
-document.getElementById("exportBtn").addEventListener("click", () => {
-  alert("Exporting report... (can be connected to PHP/PDF)");
-});
-</script>
-
-<script>
-  const currentPage = window.location.pathname.split("/").pop();
-
-  document.querySelectorAll(".menu-item").forEach(link => {
-    if (link.getAttribute("href") === currentPage) {
-      link.classList.add("active");
-    } else {
-      link.classList.remove("active");
+  // build map keyed by Student UserId (capital U)
+  Object.keys(userByStudentId).forEach(k => delete userByStudentId[k]);
+  for (const authUid in allUsers) {
+    const u = allUsers[authUid];
+    if (u && (u.UserId || u.userId)) {
+      userByStudentId[u.UserId || u.userId] = u;
     }
-  });
+  }
+
+  // Reload reports to show updated names
+  loadStudentReports();
+});
+
+// Update status in localStorage and apply visual styling
+window.updateStatus = function(selectElement) {
+  const userId = selectElement.dataset.userid;
+  const status = selectElement.value;
+
+  // Save to localStorage
+  localStorage.setItem(`student_status_${userId}`, status);
+
+  // Update visual classes
+  selectElement.classList.remove('completed', 'pending', 'none');
+  selectElement.classList.add(status.toLowerCase());
+
+  console.log(`Status for ${userId} saved to localStorage: ${status}`);
+};
+
+loadStudentReports();
 </script>
+
+
 
 
 </body>

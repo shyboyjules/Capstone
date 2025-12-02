@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <title>Admin Settings – MathQuest</title>
-  
+
   <script type="module">
     import { protectRoute } from "../DB/Protect.js";
     protectRoute("admin");
   </script>
-  
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="../css/style.css" />
 </head>
@@ -17,7 +17,7 @@
 
 <div class="dashboard-wrapper">
 
- 
+  <!-- SIDEBAR -->
   <aside class="sidebar">
     <div>
       <div class="logo-area">
@@ -29,6 +29,7 @@
         <p class="menu-title">ADMIN MENU</p>
         <a href="home_admin.html" class="menu-item">📊 Dashboard</a>
         <a href="admin-users.html" class="menu-item">👥 Users</a>
+
         <p class="menu-title">ACCOUNT</p>
         <a href="admin-settings.html" class="menu-item active">⚙ Settings</a>
       </nav>
@@ -42,160 +43,134 @@
   <!-- MAIN CONTENT -->
   <main class="main-content">
     <h1 class="page-title">⚙ Admin Settings</h1>
-    <p class="subtitle">Manage system preferences and account settings</p>
+    <p class="subtitle">Manage your account information</p>
 
     <div class="settings-container">
 
-      
+      <!-- ACCOUNT SETTINGS (same as teacher) -->
       <div class="settings-card">
         <h2>👤 Account Information</h2>
-        <label>Display Name</label>
-        <input type="text" id="displayNameInput" placeholder="Enter new name">
 
-        <label>Email</label>
-        <input type="email" id="emailInput" placeholder="Enter new email">
+        <label>Display Name</label>
+        <input type="text" id="nameInput" placeholder="Enter new name" />
 
         <label>Password</label>
-        <input type="password" id="passwordInput" placeholder="Enter new password">
+        <input type="password" id="passwordInput" placeholder="Enter new password" />
 
         <button class="save-btn" id="saveAccountBtn">Save Changes</button>
       </div>
 
-      
-      <div class="settings-card">
-        <h2>⚡ System Configuration</h2>
-        <label>Enable Maintenance Mode</label>
-        <select id="maintenanceSelect">
-          <option>Disabled</option>
-          <option>Enabled</option>
-        </select>
-
-        <label>Auto Backup</label>
-        <select id="backupSelect">
-          <option>Daily</option>
-          <option>Weekly</option>
-          <option>Monthly</option>
-        </select>
-
-        <button class="save-btn" id="saveSystemBtn">Save System Settings</button>
-      </div>
-
-      
+      <!-- DELETE ACCOUNT -->
       <div class="settings-card danger-zone">
         <h2>⚠ Danger Zone</h2>
-        <p>Deleting an Admin Account is permanent. Please proceed with caution.</p>
-        <button class="delete-btn" id="deleteAdminBtn">Delete Admin Account</button>
+        <p>Deleting your Admin account is permanent.</p>
+        <button class="delete-btn" id="deleteAdminBtn">Delete Account</button>
       </div>
 
     </div>
   </main>
 </div>
 
+<!-- JS AREA -->
 <script type="module">
-import { getAuth, EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-
-// ===== CHANGED: Import Realtime Database instead of Firestore
-import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-database.js";
-
 import { app } from "../DB/firebase.js";
+import { getAuth, EmailAuthProvider, updatePassword, reauthenticateWithCredential } 
+  from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+
+import { getDatabase, ref, update, get } 
+  from "https://www.gstatic.com/firebasejs/11.0.0/firebase-database.js";
+
+import { logoutUser } from "../DB/auth.js";
 
 const auth = getAuth(app);
-
-// ===== CHANGED: Initialize Realtime Database instead of Firestore
 const db = getDatabase(app);
 
-// =====================
-// ACCOUNT INFO SAVE
-// =====================
-const saveAccountBtn = document.getElementById("saveAccountBtn");
-saveAccountBtn.addEventListener("click", async () => {
-  const user = auth.currentUser;
-  if (!user) return alert("❌ No logged-in user found.");
+// =========================
+// LOAD CURRENT NAME
+// =========================
+auth.onAuthStateChanged(async (user) => {
+  if (!user) return;
 
-  const displayName = document.getElementById("displayNameInput").value.trim();
-  const email = document.getElementById("emailInput").value.trim();
-  const password = document.getElementById("passwordInput").value;
-
-  try {
-    // ===== CHANGED: Use Realtime Database ref instead of Firestore doc
-    const userRef = ref(db, "users/" + user.uid);
-
-    let updateData = {};
-    if (displayName) updateData.username = displayName;
-    if (email) updateData.email = email;
-    if (password) updateData.password = password;
-
-    if (Object.keys(updateData).length === 0) return alert("No changes to save.");
-
-    // ===== CHANGED: Use Realtime Database update() instead of updateDoc()
-    await update(userRef, updateData);
-
-    alert("✅ Account information updated successfully!");
-  } catch (err) {
-    console.error(err);
-    alert("❌ Failed to save account information.");
-  }
-});
-
-// =====================
-// SYSTEM SETTINGS SAVE
-// =====================
-const saveSystemBtn = document.getElementById("saveSystemBtn");
-saveSystemBtn.addEventListener("click", () => {
-  const maintenanceMode = document.getElementById("maintenanceSelect").value;
-  const backupOption = document.getElementById("backupSelect").value;
-
-  // Here you can store these settings to Realtime Database or localStorage if needed
-  alert(`✅ System settings saved!\nMaintenance: ${maintenanceMode}\nBackup: ${backupOption}`);
-});
-
-// =====================
-// DELETE ADMIN ACCOUNT
-// =====================
-const deleteBtn = document.getElementById("deleteAdminBtn");
-
-deleteBtn.addEventListener("click", async () => {
-  const user = auth.currentUser;
-  if (!user) return alert("❌ No logged-in user found.");
-
-  // ===== CHANGED: Use Realtime Database ref and get() instead of getDoc()
   const userRef = ref(db, "users/" + user.uid);
-  const snapshot = await get(userRef);
+  const snap = await get(userRef);
 
-  if (!snapshot.exists()) return alert("❌ User data not found.");
-
-  // ===== CHANGED: Access data via snapshot.val() instead of doc.data()
-  const role = snapshot.val().role;
-
-  if (role !== "admin") {
-    return alert("❌ Only Admins can delete this account.");
-  }
-
-  if (!confirm("Are you sure you want to delete your admin account? This action is permanent.")) return;
-
-  //2FA
-  const password = prompt("Please enter your password to confirm deletion:");
-  if (!password) return alert("❌ Password required for verification.");
-
-  const credential = EmailAuthProvider.credential(user.email, password);
-
-  try {
-    await reauthenticateWithCredential(user, credential);
-    await user.delete();
-    alert("✅ Admin account deleted successfully.");
-    window.location.href = "../landing/index.html"; 
-  } catch (err) {
-    console.error(err);
-    alert("❌ Verification failed or account could not be deleted. Make sure your password is correct.");
+  if (snap.exists()) {
+    document.getElementById("nameInput").value = snap.val().username || "";
   }
 });
 
-// =====================
-// LOGOUT BUTTON
-// =====================
-import { logoutUser } from "../DB/auth.js";
-const logoutBtn = document.getElementById("logoutBtn");
-logoutBtn.addEventListener("click", logoutUser);
+// =========================
+// SAVE CHANGES
+// =========================
+document.getElementById("saveAccountBtn").addEventListener("click", async () => {
+  const user = auth.currentUser;
+  if (!user) return alert("❌ No logged-in user found.");
+
+  const newName = document.getElementById("nameInput").value.trim();
+  const newPassword = document.getElementById("passwordInput").value;
+
+  const userRef = ref(db, "users/" + user.uid);
+
+  let updates = {};
+
+  if (newName) updates.username = newName;
+
+  try {
+    if (newPassword) await updatePassword(user, newPassword);
+
+    if (Object.keys(updates).length > 0) {
+      await update(userRef, updates);
+    }
+
+    alert("✅ Changes saved successfully!");
+  } catch (err) {
+    console.error(err);
+    alert("❌ Failed to save changes.");
+  }
+});
+
+// =========================
+// DELETE ACCOUNT
+// =========================
+document.getElementById("deleteAdminBtn").addEventListener("click", async () => {
+  const user = auth.currentUser;
+  if (!user) return alert("❌ No logged-in user.");
+
+  const userRef = ref(db, "users/" + user.uid);
+  const snap = await get(userRef);
+
+  if (!snap.exists() || snap.val().role !== "admin")
+    return alert("❌ Only admin accounts can delete themselves.");
+
+  if (!confirm("Are you sure? This cannot be undone.")) return;
+
+  // PASSWORD CONFIRMATION FOR SECURITY
+  const password = prompt("Enter your password to confirm:");
+  if (!password) return alert("❌ Password is required.");
+
+  try {
+    const cred = EmailAuthProvider.credential(user.email, password);
+
+    await reauthenticateWithCredential(user, cred);
+
+    // Delete Auth
+    await user.delete();
+
+    // Delete DB record (optional)
+    update(userRef, null);
+
+    alert("✅ Admin account deleted.");
+    window.location.href = "../landing/index.html";
+
+  } catch (err) {
+    console.error(err);
+    alert("❌ Incorrect password or failed to delete.");
+  }
+});
+
+// LOGOUT
+document.getElementById("logoutBtn").addEventListener("click", logoutUser);
+
 </script>
 
 </body>

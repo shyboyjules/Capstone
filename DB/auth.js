@@ -28,37 +28,65 @@ setPersistence(auth, browserSessionPersistence);
 //
 // REGISTER USER
 //
-export async function registerUser(email, password, username, role = "user", robloxId) {
+export async function registerUser(email, password, username, role = "user", userIdInput) {
   try {
 
-    // ⭐ Roblox ID REQUIRED only for users
-    if (role === "user" && (!robloxId || robloxId.trim() === "")) {
-      throw new Error("Roblox ID is required for students.");
+    // ⭐ Require UserId only for students
+    if (role === "user") {
+      if (!userIdInput || userIdInput.trim() === "" || isNaN(userIdInput)) {
+        throw new Error("User ID must be a valid number.");
+      }
     }
 
+    // Convert to number
+    const userId = Number(userIdInput);
+
+    // -----------------------------
+    // ⭐ CHECK IF STUDENT STATS EXIST
+    // Path: Students/Stats/{UserId}
+    // -----------------------------
+    let statsRef = ref(db, `Students/Stats/${userId}`);
+    let statsSnap = await get(statsRef);
+
+    // -----------------------------
+    // ⭐ IF NOT EXIST → CREATE DEFAULT STATS
+    // -----------------------------
+    if (!statsSnap.exists() && role === "user") {
+      await set(statsRef, {
+        UserId: userId,
+        CorrectAnswers: 0,
+        WrongAnswers: 0,
+        Level: 0,
+        TimeSpent: 0
+      });
+      console.log("🆕 Created new Student Stats for UserId:", userId);
+    }
+
+    // -----------------------------
+    // ⭐ CONTINUE NORMAL REGISTRATION
+    // -----------------------------
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
-    // Save display name
+    // Update Firebase Auth display name
     await updateProfile(user, { displayName: username });
 
-    // ⭐ Prepare data object
+    // Data saved to users/{uid}
     const userData = {
       username,
       email,
       role,
-      createdAt: Date.now()
+      createdAt: Date.now(),
     };
 
-    // ⭐ Add robloxId ONLY if user is a student
     if (role === "user") {
-      userData.robloxId = robloxId;
+      userData.UserId = userId;
     }
 
-    // Save to Realtime Database
+    // Save user data
     await set(ref(db, "users/" + user.uid), userData);
 
-    console.log("✅ Registered & saved");
+    console.log("✅ Registered successfully — User + Stats saved");
     return user;
 
   } catch (error) {
@@ -66,6 +94,7 @@ export async function registerUser(email, password, username, role = "user", rob
     throw error;
   }
 }
+
 
 //
 // LOGIN USER

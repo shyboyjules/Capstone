@@ -19,16 +19,11 @@ import { app } from "./firebase.js";
 const auth = getAuth(app);
 const db = getDatabase(app);
 
-// Ensure session persistence is the browser session (cleared when browser ends)
+
 setPersistence(auth, browserSessionPersistence).catch((err) => {
   // non-fatal: log and continue
   console.warn("Could not set session persistence:", err && err.message);
 });
-
-// NOTE: removed automatic sign-out on unload because it also fired
-// during normal in-app navigation and caused protected pages to redirect.
-// Rely on `browserSessionPersistence` and explicit logout instead.
-
 
 export async function loginUser(email, password) {
   const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -52,10 +47,9 @@ export async function loginUser(email, password) {
   return data;
 }
 
-// protectRoute ensures only authenticated users of a given role can access a page
+
 export function protectRoute(expectedRole) {
-  // Use Firebase auth state to verify and redirect if not authorized
-  // Avoid relying solely on sessionStorage because it may be missing in some flows.
+
   onAuthStateChanged(auth, async (user) => {
     if (!user) {
       window.location.href = "../landing/index.html";

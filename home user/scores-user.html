@@ -64,31 +64,13 @@
       <table class="scores-table">
         <thead>
           <tr>
-            <th>Week</th>
-            <th>Activity</th>
-            <th>Score</th>
-            <th>Status</th>
+            <th>My User ID</th>
+            <th>Correct</th>
+            <th>Wrong</th>
+            <th>Time Spent</th>
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>Week 1</td>
-            <td>Basic Algebra</td>
-            <td>85%</td>
-            <td class="status-completed">✔ Completed</td>
-          </tr>
-          <tr>
-            <td>Week 2</td>
-            <td>Fractions</td>
-            <td>76%</td>
-            <td class="status-completed">✔ Completed</td>
-          </tr>
-          <tr>
-            <td>Week 3</td>
-            <td>Geometry</td>
-            <td>—</td>
-            <td class="status-pending">⏳ Pending</td>
-          </tr>
         </tbody>
       </table>
     </div>
@@ -100,6 +82,69 @@
   import { loadUserProfile } from "../DB/loadUserProfile.js";
   loadUserProfile();
 </script>
+
+<script type="module">
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+import { ref, get, child, onValue } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-database.js";
+import { app, db } from "../DB/firebase.js";
+
+const auth = getAuth(app);
+
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    console.log("No user logged in");
+    return;
+  }
+  console.log("User auth UID:", user.uid);
+
+  // Listen for changes to users/<uid> to get userId, then listen to Students/Stats/<userId>
+  const userRef = ref(db, `users/${user.uid}`);
+  onValue(userRef, (userSnap) => {
+    console.log("User doc exists:", userSnap.exists());
+    if (!userSnap.exists()) {
+      console.log("User record not found at users/" + user.uid);
+      return;
+    }
+    const userData = userSnap.val();
+    console.log("User data:", userData);
+    const userId = userData.UserId;
+    console.log("UserId:", userId);
+    if (!userId) {
+      console.log("No userId field in user record");
+      return;
+    }
+
+    const statsRef = ref(db, `Students/Stats/${userId}`);
+    const tbody = document.querySelector(".scores-table tbody");
+    console.log("Listening to Students/Stats/" + userId);
+
+    onValue(statsRef, (statsSnap) => {
+      console.log("Stats snapshot exists:", statsSnap.exists());
+      tbody.innerHTML = "";
+      if (!statsSnap.exists()) {
+        console.log("No stats data found for userId:", userId);
+        tbody.innerHTML = `<tr><td colspan="4">No score data found.</td></tr>`;
+        return;
+      }
+      const data = statsSnap.val();
+      console.log("Stats data:", data);
+      const correct = data.CorrectAnswers ?? 0;
+      const wrong = data.WrongAnswers ?? 0;
+      const timeSpent = data.TimeSpent ?? "0s";
+
+      tbody.innerHTML = `
+        <tr>
+          <td>${userId}</td>
+          <td>${correct}</td>
+          <td>${wrong}</td>
+          <td>${timeSpent}</td>
+        </tr>
+      `;
+    });
+  });
+});
+</script>
+
 
 </body>
 </html>

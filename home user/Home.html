@@ -82,62 +82,35 @@
         <p>Highest Rank</p>
         <small>Leaderboard Position</small>
       </div>
-
-      <div class="card">
-        <div class="icon">📆</div>
-        <h3>3</h3>
-        <p>Weeks Completed</p>
-        <small>🔥 Keep going!</small>
-      </div>
-
-      <div class="card">
-        <div class="icon">⭐</div>
-        <h3>92%</h3>
-        <p>Best Score</p>
-        <small>Personal Record</small>
-      </div>
-    </section>
-
   </main>
 </div>
 
+<script type="module">
+  import { loadUserProfile } from "../DB/loadUserProfile.js";
+  loadUserProfile();
+</script>
 
 <!-- DYNAMIC PROFILE + WELCOME NAME SCRIPT -->
 <script type="module">
-  import { loadUserProfile } from "../DB/loadUserProfile.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-
-  /* Using Realtime DB ONLY */
-  import { ref, get, child } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-database.js";
-
-  import { app, db } from "../DB/firebase.js";
-
-  loadUserProfile(); // load sidebar user info
+  import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+  import { app } from "../DB/firebase.js";
 
   const auth = getAuth(app);
-  const welcomeName = document.querySelector(".welcome-name");
+  const logoutBtn = document.getElementById("logoutBtn");
 
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) return;
-
-    const userRef = child(ref(db), "users/" + user.uid);
-    const snap = await get(userRef);
-
-    if (!snap.exists()) {
-      console.error("❌ No user record found in Realtime DB!");
-      return;
-    }
-
-    const data = snap.val();
-
-    const displayName = data.username || data.robloxId || "Student";
-
-    /* Safe split */
-    const firstName = displayName.toString().split(" ")[0];
-
-    welcomeName.textContent = firstName;
+  logoutBtn.addEventListener("click", () => {
+    signOut(auth)
+      .then(() => {
+        // Redirect to login
+        window.location.href = "../login and register/login.html";
+      })
+      .catch((error) => {
+        console.error("Logout failed:", error);
+        alert("❌ Logout failed. Check console.");
+      });
   });
 </script>
+
 
 
 </body>

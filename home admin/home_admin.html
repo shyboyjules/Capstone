@@ -130,7 +130,7 @@ onAuthStateChanged(auth, async (user) => {
 
 <!-- ================== FIRESTORE DASHBOARD COUNTERS ================== -->
 <script type="module">
-import { ref, get } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-database.js";
+import { ref, onValue } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-database.js";
 import { app, db } from "../DB/firebase.js";
 
 const totalUsersEl = document.querySelectorAll(".admin-card h3")[0];
@@ -138,11 +138,10 @@ const teachersEl   = document.querySelectorAll(".admin-card h3")[1];
 const studentsEl   = document.querySelectorAll(".admin-card h3")[2];
 const activeEl     = document.querySelectorAll(".admin-card h3")[3];
 
-async function loadDashboardCounts() {
-  try {
-    const usersRef = ref(db, "users");
-    const snapshot = await get(usersRef);
-
+// Realtime listener for dashboard counts
+function loadDashboardCounts() {
+  const usersRef = ref(db, "users");
+  onValue(usersRef, (snapshot) => {
     let total = 0;
     let teachers = 0;
     let students = 0;
@@ -169,12 +168,8 @@ async function loadDashboardCounts() {
     teachersEl.textContent = teachers;
     studentsEl.textContent = students;
     activeEl.textContent = active;
-
-  } catch (err) {
-    console.error("Error loading dashboard counts:", err);
-  }
+  });
 }
-
 
 loadDashboardCounts();
 </script>
@@ -186,13 +181,10 @@ import { app, db } from "../DB/firebase.js";
 
 const activityList = document.getElementById("activityList");
 
-async function loadLatestActivity() {
-  try {
-    const usersRef = ref(db, "users");
-    const snapshot = await get(usersRef);
-
+function loadLatestActivity() {
+  const usersRef = ref(db, "users");
+  onValue(usersRef, (snapshot) => {
     activityList.innerHTML = "";
-
     if (!snapshot.exists()) {
       activityList.innerHTML = "<li>No recent activity.</li>";
       return;
@@ -203,24 +195,18 @@ async function loadLatestActivity() {
     const recent = usersArr.slice(0, 10);
 
     recent.forEach(user => {
-      const li = document.createElement("li");
+      const li = document.createElement('li');
       const createdAt = new Date(user.createdAt || Date.now());
       const timeStr = createdAt.toLocaleString();
       li.textContent = `🆕 ${user.username || 'Unknown'} (${user.role || 'user'}) joined on ${timeStr}`;
       activityList.appendChild(li);
     });
-
-  } catch (err) {
-    console.error("Error loading latest activity:", err);
-    activityList.innerHTML = "<li>Failed to load activity.</li>";
-  }
+  }, {
+    // keep local cache updated
+  });
 }
 
-
 loadLatestActivity();
-
-//auto-refresh every 30 seconds
-setInterval(loadLatestActivity, 30000);
 </script>
 
 <!-- ================== LOGOUT FUNCTIONALITY ================== -->

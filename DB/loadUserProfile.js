@@ -7,8 +7,8 @@ import { app, db } from "./firebase.js";
 const auth = getAuth(app);
 
 export function loadUserProfile() {
-  const nameEl = document.querySelector(".profile-info h4");
-  const roleEl = document.querySelector(".profile-info small");
+  const nameEl = document.querySelector(".profile-info h4");       // username
+  const roleEl = document.querySelector(".profile-info small");    // role or ID
   const avatarEl = document.querySelector(".profile-avatar");
 
   if (!nameEl || !roleEl || !avatarEl) return;
@@ -21,26 +21,33 @@ export function loadUserProfile() {
 
     const data = snapshot.val();
 
-    // --- NEW LOGIC ---
-    let displayName;
+    // Username
+    const displayName = data.username || "User";
 
-    if (data.role === "user") {
-      // Use robloxId for users
-      displayName = data.robloxId || "No Roblox ID";
-    } else {
-      // Use username for teacher/admin
-      displayName = data.username;
-    }
+    // Role
+    const role = data.role || "user";
 
+    // UserId
+    const userId = data.UserId || "Unknown";
+
+    // ✨ Apply username
     nameEl.textContent = displayName;
 
-    roleEl.textContent = data.role.charAt(0).toUpperCase() + data.role.slice(1);
+    // ✨ ROLE LOGIC
+    if (role === "user") {
+      // Student → show ID
+      roleEl.textContent = "ID: " + userId;
+    } else {
+      // Teacher/Admin → show actual role
+      roleEl.textContent =
+        role.charAt(0).toUpperCase() + role.slice(1);
+    }
 
-    // Avatar initials based on displayName
+    // ✨ Avatar initials
     const initials = displayName
       .toString()
       .split(" ")
-      .map(x => x[0] ?? "")
+      .map(word => word[0] || "")
       .join("")
       .toUpperCase();
 

@@ -3,17 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <title>Leaderboard – MathQuest</title>
-  
+
+  <!-- Protect Route -->
   <script type="module">
-  import { protectRoute } from "../DB/Protect.js";
-  protectRoute("user");
+    import { protectRoute } from "../DB/Protect.js";
+    protectRoute("user");
   </script>
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- CSS -->
   <link rel="stylesheet" href="../css/style.css" />
 </head>
+
 <body class="dashboard-bg">
 
 <div class="dashboard-wrapper">
@@ -25,7 +26,7 @@
         <img src="../img/logo.png" alt="Logo" class="logo" />
         <h2>MathQuest</h2>
       </div>
-      <!-- DYNAMIC USER PROFILE -->
+
       <div class="user-profile">
         <div class="profile-avatar">U</div>
         <div class="profile-info">
@@ -35,20 +36,20 @@
       </div>
 
       <nav class="menu">
-  <p class="menu-title">MAIN MENU</p>
-  <a href="Home.html" class="menu-item">🏠 Dashboard</a>
-  <a href="scores-user.html" class="menu-item">📊 My Scores</a>
-  <a href="leaderboard-user.html" class="menu-item active">🏆 Leaderboard</a>
+        <p class="menu-title">MAIN MENU</p>
+        <a href="Home.html" class="menu-item">🏠 Dashboard</a>
+        <a href="scores-user.html" class="menu-item">📊 My Scores</a>
+        <a href="leaderboard-user.html" class="menu-item active">🏆 Leaderboard</a>
 
-  <p class="menu-title">ACCOUNT</p>
-  <a href="settings-user.html" class="menu-item">⚙ Settings</a>
-</nav>
-    </div>  
+        <p class="menu-title">ACCOUNT</p>
+        <a href="settings-user.html" class="menu-item">⚙ Settings</a>
+      </nav>
+    </div>
 
     <div class="logout-area">
       <button class="logout-btn" onclick="window.location.href='../login and register/login.html'">
-      🚪 Log Out
-    </button>
+        🚪 Log Out
+      </button>
     </div>
   </aside>
 
@@ -57,60 +58,130 @@
     <h1 class="page-title">🏆 Leaderboard</h1>
     <p class="subtitle">See the top-performing students in MathQuest!</p>
 
-    <!-- Leaderboard Table -->
     <div class="leaderboard-card">
       <table class="leaderboard-table">
         <thead>
           <tr>
-            <th>Rank</th>
             <th>Student Name</th>
-            <th>Score</th>
+            <th>User ID</th>
+            <th>Correct</th>
+            <th>Wrong</th>
+            <th>Time Spent</th>
             <th>Level</th>
+            <th>Actions</th>
           </tr>
         </thead>
-        <tbody>
-          <tr class="gold">
-            <td>🥇 1</td>
-            <td>Maria Santos</td>
-            <td>980</td>
-            <td>Legend</td>
-          </tr>
-          <tr class="silver">
-            <td>🥈 2</td>
-            <td>John Reyes</td>
-            <td>920</td>
-            <td>Master</td>
-          </tr>
-          <tr class="bronze">
-            <td>🥉 3</td>
-            <td>Anna Garcia</td>
-            <td>880</td>
-            <td>Pro</td>
-          </tr>
-          <tr>
-            <td>4</td>
-            <td>You</td>
-            <td>820</td>
-            <td>Advanced</td>
-          </tr>
-          <tr>
-            <td>5</td>
-            <td>Kevin Cruz</td>
-            <td>790</td>
-            <td>Advanced</td>
-          </tr>
-        </tbody>
+        <tbody></tbody>
       </table>
     </div>
-
   </main>
-
 </div>
+
+<!-- Load user profile -->
 <script type="module">
   import { loadUserProfile } from "../DB/loadUserProfile.js";
   loadUserProfile();
 </script>
 
+<!-- Leaderboard Logic -->
+<script type="module">
+  import { getDatabase, ref, update, onValue } 
+    from "https://www.gstatic.com/firebasejs/11.0.0/firebase-database.js";
+  import { app } from "../DB/firebase.js";
+
+  const db = getDatabase(app);
+
+  let usersCache = {};
+  let statsCache = {};
+
+  const tbody = document.querySelector("tbody");
+
+  // RENDER TABLE
+  function renderLeaderboard() {
+    tbody.innerHTML = "";
+
+    const ids = Object.keys(statsCache);
+    if (ids.length === 0) {
+      tbody.innerHTML = "<tr><td colspan='7'>No data found</td></tr>";
+      return;
+    }
+
+    ids.forEach(userId => {
+      const stats = statsCache[userId] || {};
+      const user = userByStudentId[userId] || {};
+
+      const name = user.username || user.name || user.displayName || "Unknown";
+
+      const row = document.createElement("tr");
+
+      row.innerHTML = `
+        <td><input id="name-${userId}" value="${name}" disabled></td>
+        <td>${userId}</td>
+        <td><input id="correct-${userId}" type="number" value="${stats.CorrectAnswers || 0}"></td>
+        <td><input id="wrong-${userId}" type="number" value="${stats.WrongAnswers || 0}"></td>
+        <td><input id="time-${userId}" type="number" value="${stats.TimeSpent || 0}"></td>
+        <td><input id="level-${userId}" type="number" value="${stats.Level || 0}"></td>
+        <td><button onclick="saveStats('${userId}')">Save</button></td>
+      `;
+
+      tbody.appendChild(row);
+    });
+  }
+
+  // fast lookup: map Student `UserId` -> user record
+  const userByStudentId = {};
+
+  // LISTEN FOR REALTIME STUDENT STATS
+  onValue(ref(db, "Students/Stats"), (snapshot) => {
+    statsCache = snapshot.exists() ? snapshot.val() : {};
+    renderLeaderboard();
+  });
+
+  // LISTEN FOR REALTIME USER DATA (names)
+  onValue(ref(db, "users"), (snapshot) => {
+    if (!snapshot.exists()) {
+      usersCache = {};
+      Object.keys(userByStudentId).forEach(k => delete userByStudentId[k]);
+      renderLeaderboard();
+      return;
+    }
+    const allUsers = snapshot.val();
+    usersCache = allUsers;
+
+    // build map keyed by Student UserId (capital U)
+    Object.keys(userByStudentId).forEach(k => delete userByStudestId[k]);
+    for (const authUid in allUsers) {
+      const u = allUsers[authUid];
+      if (u && (u.UserId || u.userId)) {
+        userByStudentId[u.UserId || u.userId] = u;
+      }
+    }
+
+    renderLeaderboard();
+  });
+
+  // SAVE FUNCTION (Global)
+  window.saveStats = async function (userId) {
+    const correct = Number(document.getElementById(`correct-${userId}`).value);
+    const wrong = Number(document.getElementById(`wrong-${userId}`).value);
+    const time = Number(document.getElementById(`time-${userId}`).value);
+    const level = Number(document.getElementById(`level-${userId}`).value);
+
+    try {
+      await update(ref(db, `Students/Stats/${userId}`), {
+        CorrectAnswers: correct,
+        WrongAnswers: wrong,
+        TimeSpent: time,
+        Level: level
+      });
+
+      alert("✅ Stats updated successfully!");
+    } catch (err) {
+      console.error(err);
+      alert("❌ Failed to update stats.");
+    }
+  };
+</script>
 
 </body>
 </html>

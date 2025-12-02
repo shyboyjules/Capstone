@@ -92,7 +92,7 @@ function filterUsers() {
 import { app } from "../DB/firebase.js";
 
 // ===== CHANGED: Import Realtime Database instead of Firestore
-import { getDatabase, ref, get, child, update, remove } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-database.js";
+import { getDatabase, ref, get, child, update, remove, onValue } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-database.js";
 import { logoutUser } from "../DB/auth.js";
 
 const db = getDatabase(app);
@@ -101,17 +101,14 @@ const tableBody = document.querySelector("#userTable tbody");
 // =====================
 // LOAD USERS
 // =====================
-async function loadUsers() {
-  // ===== CHANGED: Realtime DB ref and get() instead of Firestore collection/getDocs
+function loadUsers() {
+  // Listen for realtime updates on users/
   const usersRef = ref(db, "users");
-  const snapshot = await get(usersRef);
-
-  tableBody.innerHTML = "";
-
-  if (snapshot.exists()) {
+  onValue(usersRef, (snapshot) => {
+    tableBody.innerHTML = "";
+    if (!snapshot.exists()) return;
     const usersData = snapshot.val();
     Object.entries(usersData).forEach(([userId, user]) => {
-      // defensive defaults for missing/legacy fields
       const displayName = (user && (user.username || user.name || user.fullName)) ? (user.username || user.name || user.fullName) : "Unknown";
       const displayRole = (user && user.role) ? user.role : "user";
       const displayEmail = (user && user.email) ? user.email : "—";
@@ -133,9 +130,7 @@ async function loadUsers() {
       `;
       tableBody.appendChild(row);
     });
-  }
-
-  console.log("✅ User list loaded.");
+  });
 }
 
 // =====================
@@ -206,7 +201,9 @@ function promptRole(currentRole) {
 // =====================
 // INITIALIZE
 // =====================
-document.addEventListener("DOMContentLoaded", loadUsers);
+document.addEventListener("DOMContentLoaded", () => {
+  loadUsers();
+});
 // wire logout button
 document.getElementById("logoutBtn").addEventListener("click", logoutUser);
 </script>
