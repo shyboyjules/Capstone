@@ -11,7 +11,6 @@
   </script>
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <link rel="stylesheet" href="../css/style.css" />
 </head>
 
@@ -68,7 +67,6 @@
             <th>Wrong</th>
             <th>Time Spent</th>
             <th>Level</th>
-            <th>Actions</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -85,7 +83,7 @@
 
 <!-- Leaderboard Logic -->
 <script type="module">
-  import { getDatabase, ref, update, onValue } 
+  import { getDatabase, ref, onValue } 
     from "https://www.gstatic.com/firebasejs/11.0.0/firebase-database.js";
   import { app } from "../DB/firebase.js";
 
@@ -96,48 +94,64 @@
 
   const tbody = document.querySelector("tbody");
 
-  // RENDER TABLE
+  // fast lookup: UserId → full user record
+  const userByStudentId = {};
+
   function renderLeaderboard() {
     tbody.innerHTML = "";
 
     const ids = Object.keys(statsCache);
+
     if (ids.length === 0) {
-      tbody.innerHTML = "<tr><td colspan='7'>No data found</td></tr>";
+      tbody.innerHTML = "<tr><td colspan='6'>No data found</td></tr>";
       return;
     }
 
-    ids.forEach(userId => {
+    // SORT BY HIGHEST CORRECT ANSWERS
+    ids.sort((a, b) => {
+      const A = statsCache[a]?.CorrectAnswers || 0;
+      const B = statsCache[b]?.CorrectAnswers || 0;
+
+      if (B !== A) return B - A;
+
+      // tie-breaker: lower TimeSpent wins
+      const timeA = statsCache[a]?.TimeSpent || 0;
+      const timeB = statsCache[b]?.TimeSpent || 0;
+      return timeA - timeB;
+    });
+
+    ids.forEach((userId, index) => {
       const stats = statsCache[userId] || {};
       const user = userByStudentId[userId] || {};
-
       const name = user.username || user.name || user.displayName || "Unknown";
 
       const row = document.createElement("tr");
 
+      // 🥇🥈🥉 Apply Top 3 highlight classes
+      if (index === 0) row.classList.add("gold-row");
+      if (index === 1) row.classList.add("silver-row");
+      if (index === 2) row.classList.add("bronze-row");
+
       row.innerHTML = `
-        <td><input id="name-${userId}" value="${name}" disabled></td>
+        <td>${name}</td>
         <td>${userId}</td>
-        <td><input id="correct-${userId}" type="number" value="${stats.CorrectAnswers || 0}"></td>
-        <td><input id="wrong-${userId}" type="number" value="${stats.WrongAnswers || 0}"></td>
-        <td><input id="time-${userId}" type="number" value="${stats.TimeSpent || 0}"></td>
-        <td><input id="level-${userId}" type="number" value="${stats.Level || 0}"></td>
-        <td><button onclick="saveStats('${userId}')">Save</button></td>
+        <td>${stats.CorrectAnswers || 0}</td>
+        <td>${stats.WrongAnswers || 0}</td>
+        <td>${stats.TimeSpent || 0}</td>
+        <td>${stats.Level || 0}</td>
       `;
 
       tbody.appendChild(row);
     });
   }
 
-  // fast lookup: map Student `UserId` -> user record
-  const userByStudentId = {};
-
-  // LISTEN FOR REALTIME STUDENT STATS
+  // STUDENT STATS LISTENER
   onValue(ref(db, "Students/Stats"), (snapshot) => {
     statsCache = snapshot.exists() ? snapshot.val() : {};
     renderLeaderboard();
   });
 
-  // LISTEN FOR REALTIME USER DATA (names)
+  // USER INFORMATION LISTENER
   onValue(ref(db, "users"), (snapshot) => {
     if (!snapshot.exists()) {
       usersCache = {};
@@ -145,42 +159,22 @@
       renderLeaderboard();
       return;
     }
+
     const allUsers = snapshot.val();
     usersCache = allUsers;
 
-    // build map keyed by Student UserId (capital U)
-    Object.keys(userByStudentId).forEach(k => delete userByStudestId[k]);
+    // rebuild userId lookup map
+    Object.keys(userByStudentId).forEach(k => delete userByStudentId[k]);
+
     for (const authUid in allUsers) {
       const u = allUsers[authUid];
-      if (u && (u.UserId || u.userId)) {
+      if (u?.UserId || u?.userId) {
         userByStudentId[u.UserId || u.userId] = u;
       }
     }
 
     renderLeaderboard();
   });
-
-  // SAVE FUNCTION (Global)
-  window.saveStats = async function (userId) {
-    const correct = Number(document.getElementById(`correct-${userId}`).value);
-    const wrong = Number(document.getElementById(`wrong-${userId}`).value);
-    const time = Number(document.getElementById(`time-${userId}`).value);
-    const level = Number(document.getElementById(`level-${userId}`).value);
-
-    try {
-      await update(ref(db, `Students/Stats/${userId}`), {
-        CorrectAnswers: correct,
-        WrongAnswers: wrong,
-        TimeSpent: time,
-        Level: level
-      });
-
-      alert("✅ Stats updated successfully!");
-    } catch (err) {
-      console.error(err);
-      alert("❌ Failed to update stats.");
-    }
-  };
 </script>
 
 </body>

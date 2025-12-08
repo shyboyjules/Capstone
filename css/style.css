@@ -1113,3 +1113,30 @@ button:hover {
 .main-content {
   margin-left: 260px;  /* same as sidebar width */
 }
+/* 🥇 GOLD – 1st Place */
+.gold-row {
+  background: linear-gradient(to right, #ffdf70, #ffd24d);
+  font-weight: bold;
+  color: #5a4500;
+}
+
+/* 🥈 SILVER – 2nd Place */
+.silver-row {
+  background: linear-gradient(to right, #e5e5e5, #cccccc);
+  font-weight: bold;
+  color: #3d3d3d;
+}
+
+/* 🥉 BRONZE – 3rd Place */
+.bronze-row {
+  background: linear-gradient(to right, #d9a066, #c7894a);
+  font-weight: bold;
+  color: #4b2e03;
+}
+
+/* Make sure text stays readable */
+.gold-row td,
+.silver-row td,
+.bronze-row td {
+  padding: 10px;
+}
